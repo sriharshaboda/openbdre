@@ -10,4 +10,4 @@ java -jar md-rest-api/target/dependency/jetty-runner.jar  --port 28850 \
            auth-rest-api/context.xml \
            md-ui/context.xml \
            md-rest-api/context.xml \
-           context.xml
+           appstore-context.xml
