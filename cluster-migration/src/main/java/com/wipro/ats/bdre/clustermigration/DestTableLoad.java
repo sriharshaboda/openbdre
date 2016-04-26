@@ -79,6 +79,7 @@ public class DestTableLoad extends BaseStructure {
             if (!busPartitionList.contains(truncatedSrcPath)) {
                 Path existsPathCheck = new Path(truncatedDestPath);
                 Path srcPathToMove = new Path(truncatedSrcPath);
+                busPartitionList.add(truncatedSrcPath);
                 //check if the business partition to be copied already exists inside the destination table, if it does, it has to be overwritten (in this case delete at dest and move from source to dest
                 LOGGER.info("Does the business partition exist already inside the table? True/False? = " + hdfs.exists(existsPathCheck));
                 if (hdfs.exists(existsPathCheck)) {
@@ -94,7 +95,8 @@ public class DestTableLoad extends BaseStructure {
             } else {
                 System.out.println("Business partition copied already, hence skipping");
             }
-            hdfs.delete(srcPath, true);
         }
+        hdfs.delete(srcPath, true);
+
     }
 }
