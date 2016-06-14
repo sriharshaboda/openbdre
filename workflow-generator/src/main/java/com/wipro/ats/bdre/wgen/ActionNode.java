@@ -249,7 +249,19 @@ public class ActionNode extends OozieNode {
             processTypeSet.add(subProcessId);
             // iterate through plugin config with '${subProcessId}.wf-gen' as config group,get corresponding values which are jar paths and  adding all jars to classpath
             List<String> jarsToLoad = new PluginConfig().getWithConfig(pluginUniqueId, subProcessId + ".wf-gen");
-
+            List<String> classesOfJars = new PluginConfig().listPluginKeys(pluginUniqueId, subProcessId + ".wf-gen");
+            int classSearchIndex=0;
+            for(String eachClass:classesOfJars){
+               try{
+                Class.forName(eachClass);
+                LOGGER.info(eachClass +" Class is already loaded into the classpath, hence not attempting to load again");
+                jarsToLoad.remove(classSearchIndex);
+                classSearchIndex++;
+               }
+               catch(ClassNotFoundException ex){
+                   LOGGER.info(eachClass+" class is not present in the classpath, hence attempting to load");
+               }
+            }
             LOGGER.info(pluginUniqueId);
             LOGGER.info(subProcessId);
             LOGGER.info("size of jarsToLoad before removing duplicates " + jarsToLoad.size());
