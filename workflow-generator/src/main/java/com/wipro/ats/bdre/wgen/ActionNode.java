@@ -117,17 +117,17 @@ public class ActionNode extends OozieNode {
 
     public void setProcessInfo(ProcessInfo processInfo) {
         this.processInfo = processInfo;
-        LOGGER.info("inside setProcessInfo");
+        LOGGER.info("inside setProcessInfo"+processInfo);
         setPluginProcessInfo(this.processInfo);
         if (processInfo.getProcessTypeId() == RAW_LOAD_ACTION) {
             RawLoadActionNode rawLoadActionNode = new RawLoadActionNode(this);
             containingNodes.add(rawLoadActionNode);
 
-        } else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
+        }/* else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
             HiveActionNode hiveActionNode = new HiveActionNode(this);
             containingNodes.add(hiveActionNode);
 
-        } else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
+        } */else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
             ImportActionNode importActionNode = new ImportActionNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             importActionNode.setToNode(fileRegistrationNode);
@@ -253,11 +253,11 @@ public class ActionNode extends OozieNode {
                     return;
                 }
                 // Under each such "wf-gen" config group, read the value with key as 'parent-process-id' for a parent process id
-                PluginConfigId pluginConfigIdParent=new PluginConfigId();
-                pluginConfigIdParent.setPluginUniqueId(pluginUniqueId);
-                pluginConfigIdParent.setPluginKey("parent-process-id");
-                com.wipro.ats.bdre.md.dao.jpa.PluginConfig pluginConfigParent=new PluginConfig().get(pluginConfigIdParent);
-                Integer parentProcessId=Integer.parseInt(pluginConfigParent.getPluginValue());
+               // PluginConfigId pluginConfigIdParent=new PluginConfigId();
+                //pluginConfigIdParent.setPluginUniqueId(pluginUniqueId);
+               // pluginConfigIdParent.setPluginKey("parent-process-id");
+               // com.wipro.ats.bdre.md.dao.jpa.PluginConfig pluginConfigParent=new PluginConfig().get(pluginConfigIdParent);
+               // Integer parentProcessId=Integer.parseInt(pluginConfigParent.getPluginValue());
                 // Read corresponding list of sub processes through key as parent-processid.sub-process-id and add to the set
                 PluginConfigId pluginConfigIdSubProcess=new PluginConfigId();
                 pluginConfigIdSubProcess.setPluginUniqueId(pluginUniqueId);
@@ -270,7 +270,7 @@ public class ActionNode extends OozieNode {
                 // add logic to populate set with all sub processes and proceed any further only if processInfo.processId belongs to the set
 
                 int subProcessId = processInfo.getProcessTypeId();
-                LOGGER.debug("Sub process id = " + subProcessId);
+                LOGGER.info("Sub process id = " + subProcessId);
                 processTypeSet.add(subProcessId);
 
                 // iterate through plugin config with '${subProcessId}.wf-gen' as config group,get corresponding values which are jar paths and  adding all jars to classpath
@@ -287,20 +287,30 @@ public class ActionNode extends OozieNode {
                 jarsToLoad.clear();
                 jarsToLoad.addAll(removedDuplicated);
                 LOGGER.info("size of jarstoLoad"+jarsToLoad.size());
-            URL[] urls = new URL[10];
-            for (String jar : jarsToLoad) {
+               URL[] urls = new URL[10];
+                for (String jar : jarsToLoad) {
                 int index = 0;
                 LOGGER.info("adding " + jar + " in classpath");
+                String currentUsersHomeDir = System.getProperty("user.home");
+                    LOGGER.info(currentUsersHomeDir);
                 try {
-                    File file = new File(jar);
+                    LOGGER.info("checking if jar exists");
+                    File file = new File(currentUsersHomeDir+"/"+jar);
+                   if(file.exists()){
                     URL url = file.toURL();
                     urls[index] = url;
+                   }
+                    else{
+                       throw new BDREException("Jar can not be found at the location "+currentUsersHomeDir+"/"+jar);
+                   }
                     index++;
                 } catch (Exception ex) {
+                    LOGGER.info("jar does not exists");
                     ex.printStackTrace();
                     throw new BDREException(ex);
                 }
             }
+
             URLClassLoader pluginClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
             // iterate through plugin config for config group as "wf-cont-nodes", form list of nodes in correct order
