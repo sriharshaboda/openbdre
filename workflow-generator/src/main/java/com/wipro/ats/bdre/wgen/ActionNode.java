@@ -17,6 +17,7 @@ package com.wipro.ats.bdre.wgen;
 import com.wipro.ats.bdre.exception.BDREException;
 import com.wipro.ats.bdre.md.api.PluginConfig;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
+import com.wipro.ats.bdre.md.dao.jpa.PluginConfigId;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -79,10 +80,14 @@ public class ActionNode extends OozieNode {
     public static final int SOURCE_TO_DEST_COPY_ACTION = 34;
     public static final int DEST_TABLE_LOAD_ACTION = 35;
     public static final int REGISTER_PARTITIONS_ACTION = 36;
+
+    private static final Logger LOGGER = Logger.getLogger(ActionNode.class);
+
+
     public static final int SUPER_WF_ACTION = 37;
     public static final int SUB_WF_ACTION = 38;
-    private static final Logger LOGGER = Logger.getLogger(ActionNode.class);
-    public Set processTypeSet = new HashSet<Integer>();
+
+
     private ProcessInfo processInfo = new ProcessInfo();
     private List<GenericActionNode> containingNodes = new ArrayList<GenericActionNode>();
 
@@ -108,6 +113,8 @@ public class ActionNode extends OozieNode {
         return processInfo;
     }
 
+    public Set processTypeSet = new HashSet<Integer>();
+
     public void setProcessInfo(ProcessInfo processInfo) {
         this.processInfo = processInfo;
         LOGGER.info("inside setProcessInfo");
@@ -116,18 +123,18 @@ public class ActionNode extends OozieNode {
             RawLoadActionNode rawLoadActionNode = new RawLoadActionNode(this);
             containingNodes.add(rawLoadActionNode);
 
-        } else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
+        }/* else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
             HiveActionNode hiveActionNode = new HiveActionNode(this);
             containingNodes.add(hiveActionNode);
 
-        } else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
+        } */else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
             ImportActionNode importActionNode = new ImportActionNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             importActionNode.setToNode(fileRegistrationNode);
             containingNodes.add(importActionNode);
             containingNodes.add(fileRegistrationNode);
 
-        } else if (processInfo.getProcessTypeId() == DATA_EXPORT_ACTION) {
+        }  else if (processInfo.getProcessTypeId() == DATA_EXPORT_ACTION) {
             ExportActionNode exportActionNode = new ExportActionNode(this);
             containingNodes.add(exportActionNode);
 
@@ -155,11 +162,11 @@ public class ActionNode extends OozieNode {
             FileRegistrationNode frActionNode = new FileRegistrationNode(this);
             containingNodes.add(frActionNode);
 
-        } else if (processInfo.getProcessTypeId() == SUB_WF_ACTION) {
+        }else if (processInfo.getProcessTypeId() == SUB_WF_ACTION) {
             SubWorkflowActionNode subWorkflowActionNode = new SubWorkflowActionNode(this);
             containingNodes.add(subWorkflowActionNode);
 
-        } else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
+        }  else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
             DataGenerationNode dataGenerationNode = new DataGenerationNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             dataGenerationNode.setToNode(fileRegistrationNode);
@@ -176,7 +183,7 @@ public class ActionNode extends OozieNode {
             containingNodes.add(lofActionNode);
             containingNodes.add(dataQualityActionNode);
             containingNodes.add(fileRegistrationNode);
-        } else if (processInfo.getProcessTypeId() == SEMANTIC_ACTION) {
+        }  else if (processInfo.getProcessTypeId() == SEMANTIC_ACTION) {
 
         } else if (processInfo.getProcessTypeId() == INGESTION) {
 
@@ -186,7 +193,7 @@ public class ActionNode extends OozieNode {
 
         } else if (processInfo.getProcessTypeId() == DQ_PARENT_ACTION) {
 
-        } else if (processInfo.getProcessTypeId() == HIVE_GEN_PARENT_ACTION) {
+        }  else if (processInfo.getProcessTypeId() == HIVE_GEN_PARENT_ACTION) {
 
         } else if (processInfo.getProcessTypeId() == HIVE_MIGRATION_ACTION) {
 
@@ -238,62 +245,94 @@ public class ActionNode extends OozieNode {
         // fill plugin id list by iteration through plugin config and populate with each row's plugin id. Set puts only unique entries
         Set<String> pluginUniqueIdList = new HashSet((new PluginConfig().distinctPluginUniqueIdList("wf-cont-nodes")));
         // for each plugin id check for a config group of "wf-gen" for same structure of plugin config for a  action node refer to:
-        for (String pluginUniqueId : pluginUniqueIdList) {
-            LOGGER.info("ppid= " + processInfo.getParentProcessId());
+        for (String pluginUniqueId:pluginUniqueIdList)
+        {
+            LOGGER.info("ppid= "+processInfo.getParentProcessId());
             if (processInfo.getParentProcessId() == null) {
                 processTypeSet.add(processInfo.getProcessTypeId());
                 return;
             }
+            // Under each such "wf-gen" config group, read the value with key as 'parent-process-id' for a parent process id
+            // PluginConfigId pluginConfigIdParent=new PluginConfigId();
+            //pluginConfigIdParent.setPluginUniqueId(pluginUniqueId);
+            // pluginConfigIdParent.setPluginKey("parent-process-id");
+            // com.wipro.ats.bdre.md.dao.jpa.PluginConfig pluginConfigParent=new PluginConfig().get(pluginConfigIdParent);
+            // Integer parentProcessId=Integer.parseInt(pluginConfigParent.getPluginValue());
+            // Read corresponding list of sub processes through key as parent-processid.sub-process-id and add to the set
+            PluginConfigId pluginConfigIdSubProcess=new PluginConfigId();
+            pluginConfigIdSubProcess.setPluginUniqueId(pluginUniqueId);
+            pluginConfigIdSubProcess.setPluginKey("sub-process-ids");
+            //com.wipro.ats.bdre.md.dao.jpa.PluginConfig pluginConfigSubProcess=new PluginConfig().get(pluginConfigIdSubProcess);
+            //String subProcesses=pluginConfigSubProcess.getPluginValue();
+            //String[] subProcessIds=subProcesses.split(",");
+            //Set<Integer> subProcessSet = new HashSet<>();
+            //subProcessSet.add(processInfo.getProcessTypeId());
+            // add logic to populate set with all sub processes and proceed any further only if processInfo.processId belongs to the set
+
             int subProcessId = processInfo.getProcessTypeId();
-            LOGGER.debug("Sub process id = " + subProcessId);
+            LOGGER.info("Sub process id = " + subProcessId);
             processTypeSet.add(subProcessId);
+
             // iterate through plugin config with '${subProcessId}.wf-gen' as config group,get corresponding values which are jar paths and  adding all jars to classpath
-            List<String> jarsToLoad = new PluginConfig().getWithConfig(pluginUniqueId, subProcessId + ".wf-gen");
-            List<String> classesOfJars = new PluginConfig().listPluginKeys(pluginUniqueId, subProcessId + ".wf-gen");
-            int classSearchIndex=0;
-            for(String eachClass:classesOfJars){
-               try{
-                Class.forName(eachClass);
-                LOGGER.info(eachClass +" Class is already loaded into the classpath, hence not attempting to load again");
-                jarsToLoad.remove(classSearchIndex);
-                classSearchIndex++;
-               }
-               catch(ClassNotFoundException ex){
-                   LOGGER.info(eachClass+" class is not present in the classpath, hence attempting to load");
-               }
-            }
+            List<String> jarsToLoad = new ArrayList<>();
+            jarsToLoad=new PluginConfig().getWithConfig(pluginUniqueId,subProcessId+".wf-gen");
+
+            //}
             LOGGER.info(pluginUniqueId);
             LOGGER.info(subProcessId);
-            LOGGER.info("size of jarsToLoad before removing duplicates " + jarsToLoad.size());
+            LOGGER.info("size of jarstoLoad before remove duplication "+jarsToLoad.size());
             //add logic to skip adding jars if classes are already loaded, classes can be taken from containing nodes
-            Set<String> removedDuplicated = new HashSet<>();
+            Set<String> removedDuplicated=new HashSet<>();
             removedDuplicated.addAll(jarsToLoad);
             jarsToLoad.clear();
             jarsToLoad.addAll(removedDuplicated);
-            LOGGER.info("size of jarsToLoad after removing duplicates " + jarsToLoad.size());
+            LOGGER.info("size of jarstoLoad"+jarsToLoad.size());
             URL[] urls = new URL[10];
             for (String jar : jarsToLoad) {
                 int index = 0;
                 LOGGER.info("adding " + jar + " in classpath");
+                String currentUsersHomeDir = System.getProperty("user.home");
+                LOGGER.info(currentUsersHomeDir);
                 try {
-                    File file = new File(jar);
-                    URL url = file.toURL();
-                    urls[index] = url;
+                    LOGGER.info("checking if jar exists");
+                    File file = new File(currentUsersHomeDir+"/"+jar);
+                    if(file.exists()){
+                        URL url = file.toURL();
+                        urls[index] = url;
+                    }
+                    else{
+                        throw new BDREException("Jar can not be found at the location "+currentUsersHomeDir+"/"+jar);
+                    }
                     index++;
                 } catch (Exception ex) {
+                    LOGGER.info("jar does not exists");
                     ex.printStackTrace();
                     throw new BDREException(ex);
                 }
             }
+
             URLClassLoader pluginClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
             // iterate through plugin config for config group as "wf-cont-nodes", form list of nodes in correct order
-            List<String> listOfNodeClasses = new PluginConfig().getWithConfig(pluginUniqueId, subProcessId + ".wf-cont-nodes");
-            LOGGER.info("size of listOfNodeClasses " + listOfNodeClasses.size());
-            for (String s : listOfNodeClasses) {
-                LOGGER.info("node class is " + s);
+            List<String> listOfNodeClasses = new LinkedList<>();   //keys as a list
+            listOfNodeClasses=new PluginConfig().getWithConfig(pluginUniqueId,subProcessId+".wf-cont-nodes");
+            LOGGER.info("size of listOfNodeClasses "+listOfNodeClasses.size());
+            for(String s:listOfNodeClasses)
+            {
+                LOGGER.info("node class is "+s);
             }
+            //listOfNodeClasses.addAll(nodesList);
 
+            // }
+
+            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.LOFActionNode");
+            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.DataQualityActionNode");
+            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.FileRegistrationNode");*/
+            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.RawLoadActionNode");
+            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.StageLoadActionNode");
+            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.BaseLoadActionNode");*/
+            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.ImportActionNode");
+            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.FileRegistrationNode");*/
             List<Class> listOfClassesToLoad = new LinkedList<>();
             List<GenericActionNode> listOfNodeObjects = new LinkedList<>();
             //iterate through all nodes and instantiate them
@@ -315,6 +354,7 @@ public class ActionNode extends OozieNode {
             for (int i = 0; i < listOfNodeObjects.size(); i++) {
                 try {
                     LOGGER.debug("object class= " + listOfNodeObjects.get(i).getClass());
+                    //super class of ActionNode is GenericActionNode and GenericActionNode's super class is OozieNode which contains the setToNode method. Hence invoking the same
                     Method setToNodeMethod = listOfClassesToLoad.get(i).getDeclaredMethod("setToNode", new Class[]{OozieNode.class});
                     if (i < listOfNodeObjects.size() - 1)
                         setToNodeMethod.invoke(listOfNodeObjects.get(i), new Object[]{listOfNodeObjects.get(i + 1)});
