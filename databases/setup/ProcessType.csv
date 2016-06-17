@@ -1,7 +1,6 @@
 1,'ingestion',null
 2, 'Semantic', null
 3, 'Export',null
-4, 'Data Extraction', null
 5, 'Hive Data Load', null
 6, 'Raw Load', 5
 7, 'Stage Load', 5
@@ -10,7 +9,6 @@
 10, 'Pig Action', 2
 11, 'Map Reduce', 2
 12, 'SFTP', 1
-13, 'Data Import', 4
 14, 'Hive Generation', 18
 15, 'File Registration', null
 16, 'DQ', 19

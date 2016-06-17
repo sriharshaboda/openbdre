@@ -1,12 +1,10 @@
 '1','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '3','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
-'4','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '5','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '10','param','Parameters','Additional parameters', 1,'true','text', 1
 '10','script','Script location','Script location', 1,'true','pig', 1
 '11','param','Parameters','Additional parameters', 1,'true','text', 1
 '11','program','Program Main Class','Program main class', 1,'true','text', 1
-'13','imp-common','Import Configuration','RDBMS Import Configuration', 1,'true','text', 1
 '14','data','Data-generate Configuration',' ', 1,'true','text', 1
 '14','table','table Schema Configuration',' ', 1,'true','text', 1
 '15','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
