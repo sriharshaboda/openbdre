@@ -48,7 +48,12 @@ public class MetadataActions {
                 generalConfig.setRequired(Integer.parseInt((String) data.get(4)));
                 generalConfig.setDefaultVal((String) data.get(5));
                 generalConfig.setType((String) data.get(6));
-                generalConfig.setEnabled(Boolean.parseBoolean((String) data.get(7)));
+                        if(("1").equals(data.get(7))){
+                            generalConfig.setEnabled(true);
+                        } else{
+                            generalConfig.setEnabled(false);
+                        }
+
 
                 GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
                 getGeneralConfig.insert(generalConfig);
