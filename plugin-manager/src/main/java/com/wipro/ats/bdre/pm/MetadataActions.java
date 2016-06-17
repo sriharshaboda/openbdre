@@ -22,7 +22,7 @@ public class MetadataActions {
                 processType.setProcessTypeId(Integer.parseInt((String) data.get(0)));
                 processType.setProcessTypeName((String) data.get(1));
                 try {
-                   Integer temp = Integer.parseInt( data.get(2).toString());
+                    Integer temp = Integer.parseInt( data.get(2).toString());
                     processType.setParentProcessTypeId(temp);
                     processType1.insert(processType);
                 } catch (NumberFormatException e) {
@@ -35,7 +35,6 @@ public class MetadataActions {
                 }catch (ConstraintViolationException e) {
                     throw new BDREException("Sub process type already exists");
                 }
-
             }
 
         }else if("GENERAL_CONFIG".equals(dataList.getTableName())){
