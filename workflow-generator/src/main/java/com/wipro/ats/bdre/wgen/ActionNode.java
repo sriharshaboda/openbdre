@@ -166,7 +166,7 @@ public class ActionNode extends OozieNode {
             SubWorkflowActionNode subWorkflowActionNode = new SubWorkflowActionNode(this);
             containingNodes.add(subWorkflowActionNode);
 
-        }  else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
+        }  /*else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
             DataGenerationNode dataGenerationNode = new DataGenerationNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             dataGenerationNode.setToNode(fileRegistrationNode);
@@ -174,7 +174,7 @@ public class ActionNode extends OozieNode {
             containingNodes.add(fileRegistrationNode);
 
 
-        } else if (processInfo.getProcessTypeId() == DQ_ACTION) {
+        } */else if (processInfo.getProcessTypeId() == DQ_ACTION) {
             LOFActionNode lofActionNode = new LOFActionNode(this);
             DataQualityActionNode dataQualityActionNode = new DataQualityActionNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
