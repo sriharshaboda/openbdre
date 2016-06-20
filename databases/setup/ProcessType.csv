@@ -5,7 +5,6 @@
 6, 'Raw Load', 5
 7, 'Stage Load', 5
 8, 'Base Load', 5
-9, 'Hive Action', 2
 10, 'Pig Action', 2
 11, 'Map Reduce', 2
 12, 'SFTP', 1
