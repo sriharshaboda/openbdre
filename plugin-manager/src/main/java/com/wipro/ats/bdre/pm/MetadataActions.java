@@ -47,7 +47,7 @@ public class MetadataActions {
                 generalConfig.setDefaultVal((String) data.get(5));
                 generalConfig.setType((String) data.get(6));
 
-                if("1".equals((String) data.get(7)))
+                if("1".equals( data.get(7)))
                 {
                     generalConfig.setEnabled(true);
                 }
