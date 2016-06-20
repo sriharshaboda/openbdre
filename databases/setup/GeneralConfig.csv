@@ -3,8 +3,6 @@
 '3','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '4','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '5','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
-'9','param','Parameters','Additional parameters', 1,'true','text', 1
-'9','query','Query file location','Query file location', 1,'true','hql', 1
 '10','param','Parameters','Additional parameters', 1,'true','text', 1
 '10','script','Script location','Script location', 1,'true','pig', 1
 '11','param','Parameters','Additional parameters', 1,'true','text', 1
