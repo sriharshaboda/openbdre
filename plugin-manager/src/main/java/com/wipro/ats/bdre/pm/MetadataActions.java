@@ -24,9 +24,11 @@ public class MetadataActions {
                 try {
                     Integer temp = Integer.parseInt( data.get(2).toString());
                     processType.setParentProcessTypeId(temp);
+                    LOGGER.info("subptype is "+data.get(0).toString());
                     processType1.insert(processType);
                 } catch (NumberFormatException e) {
                     LOGGER.info("parent process");
+                    LOGGER.info("pptype is "+data.get(0).toString());
                     if(processType1.get(Integer.parseInt((String) data.get(0))) ==  null) {
                         processType.setParentProcessTypeId(null);
                         processType1.insert(processType);
