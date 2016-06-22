@@ -15,7 +15,6 @@
 '15','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '17','exp-common','Export Configuration','RDBMS Export Configuration', 1,'true','text', 1
 '18','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
-'19','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '20','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '21','mqimport','MQ Import Configuration','Messaging Queue import configuration', 1,'true','text', 1
 '22','param','Parameters','Additional parameters', 1,'true','text', 1
