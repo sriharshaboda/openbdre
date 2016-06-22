@@ -3,6 +3,12 @@
 '3','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '4','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '5','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
+'9','param','Parameters','Additional parameters', 1,'true','text', 1
+'9','query','Query file location','Query file location', 1,'true','hql', 1
+'10','param','Parameters','Additional parameters', 1,'true','text', 1
+'10','script','Script location','Script location', 1,'true','pig', 1
+'11','param','Parameters','Additional parameters', 1,'true','text', 1
+'11','program','Program Main Class','Program main class', 1,'true','text', 1
 '13','imp-common','Import Configuration','RDBMS Import Configuration', 1,'true','text', 1
 '14','data','Data-generate Configuration',' ', 1,'true','text', 1
 '14','table','table Schema Configuration',' ', 1,'true','text', 1
@@ -12,7 +18,14 @@
 '19','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '20','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '21','mqimport','MQ Import Configuration','Messaging Queue import configuration', 1,'true','text', 1
+'22','param','Parameters','Additional parameters', 1,'true','text', 1
+'22','script','Script location',' ', 1,'true','shell', 1
+'22','extraFiles','Additional Files','Optional files if any to upload',1,'true','addFiles',1
 '23','flume','Flume Configuration','Flume', 1,'true','text', 1
+'30','param','Parameters','Additional parameters', 1,'true','text', 1
+'30','mapper','Mapper file','Mapper file for Hadoop streaming ', 1,'true','hadoopstream', 1
+'30', 'reducer', 'Reducer file', 'Reducer file Hadoop streaming',1, 'true', 'hadoopstream', 1
+'30','extraFiles','Additional Files','Optional files if any to upload',1,'true','addFiles',1
 '40', 'param', 'Parameters', 'Parameters', 1, 'true', 'text', 1
 'default_val.15','password_enabled','credential','Credentials for authentication', 1,'true','text', 1
 'default_val.5','password_enabled','credential','Credentials for authentication', 1,'true','text', 1
