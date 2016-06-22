@@ -44,7 +44,7 @@
         <module>file-mon</module>
         <!--<module>eventing-fwk</module>-->
         <module>hive-data-gen</module>
-        <module>dq</module>
+        <!--<module>dq</module>-->
         <!-- <module>hive-io</module>-->
         <module>data-lineage</module>
         <module>hive-plugin</module>

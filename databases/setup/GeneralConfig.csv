@@ -7,7 +7,6 @@
 '14','data','Data-generate Configuration',' ', 1,'true','text', 1
 '14','table','table Schema Configuration',' ', 1,'true','text', 1
 '15','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
-'16','dq','DQ Configuration','Data Quality configuration', 1,'true','text', 1
 '17','exp-common','Export Configuration','RDBMS Export Configuration', 1,'true','text', 1
 '18','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '19','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
