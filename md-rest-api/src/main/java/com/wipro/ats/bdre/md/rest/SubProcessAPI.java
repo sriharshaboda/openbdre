@@ -131,13 +131,9 @@ public class SubProcessAPI extends MetadataAPIBase {
             @PathVariable("id") Integer processId, Principal principal) {
         RestWrapper restWrapper = null;
        try {
-            LOGGER.info("going to delete process id : " + processId);
             com.wipro.ats.bdre.md.dao.jpa.Process process=processDAO.get(processId);
-            LOGGER.info("got process name is : " + process.getProcessName());
             processDAO.securityCheck(process.getProcess().getProcessId(),principal.getName(),WRITE);
-            LOGGER.info("after security check");
             processDAO.delete(processId);
-            LOGGER.info("after delete");
             restWrapper = new RestWrapper(null, RestWrapper.OK);
             LOGGER.info("Record  with ID:" + processId + " deleted from Process by User:" + principal.getName());
 
@@ -290,7 +286,6 @@ public class SubProcessAPI extends MetadataAPIBase {
             insertDaoProcess.setEditTs(DateConverter.stringToDate(process.getTableEditTS()));
             LOGGER.info("inserting subprocess");
             Integer processId = processDAO.insert(insertDaoProcess);
-            LOGGER.info("asdsa inserting subprocess"+processId);
             process.setProcessId(processId);
             process.setTableAddTS(DateConverter.dateToString(insertDaoProcess.getAddTs()));
             process.setTableEditTS(DateConverter.dateToString(insertDaoProcess.getEditTs()));
