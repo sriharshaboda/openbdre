@@ -913,11 +913,11 @@ public class ProcessAPI extends MetadataAPIBase {
         executionInfo.setProcessId(process.getProcessId());
         try {
             processDAO.securityCheck(process.getProcessId(),principal.getName(),"execute");
-            List<String> pluginUniqueIdList = pluginConfigDAO.distinctPluginConfig("wf-cont-nodes");
+            List<String> pluginUniqueIdList = pluginConfigDAO.distinctPluginConfig(process.getProcessTypeId() + ".execute-script");
             String executeScriptName = "Workflow.py";
             for (String pluginUniqueId:pluginUniqueIdList)
             {
-                for(String exceuteScript : pluginConfigDAO.getWithConfig(pluginUniqueId,"execute-script")){
+                for(String exceuteScript : pluginConfigDAO.getWithConfig(pluginUniqueId,process.getProcessTypeId() + ".execute-script")){
                     executeScriptName = exceuteScript;
                 }
             }

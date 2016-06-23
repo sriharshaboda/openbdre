@@ -433,11 +433,6 @@
                                                			"url": "crawler.page",
                                                			"children": []
                                                		}, {
-                                               			"label": "Monitor Directory & Ingest",
-                                               			"collapse": "1",
-                                               			"url": "filemonitor.page",
-                                               			"children": []
-                                               		}, {
                                                			"label": "Generate Bulk Data",
                                                			"collapse": "1",
                                                			"url": "datagen.page",
