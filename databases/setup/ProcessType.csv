@@ -11,10 +11,8 @@
 11, 'Map Reduce', 2
 12, 'SFTP', 1
 13, 'Data Import', 4
-14, 'Hive Generation', 18
 15, 'File Registration', null
 17, 'Data Export', 3
-18, 'Hive Generation_Parent', null
 20, 'MQ_Parent', null
 21, 'MQ Step', 20
 22,'Shell Action',2

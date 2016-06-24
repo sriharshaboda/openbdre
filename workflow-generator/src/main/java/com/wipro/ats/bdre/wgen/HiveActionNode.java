@@ -29,7 +29,7 @@ import java.util.Enumeration;
 Action nodes are the mechanism by which a workflow triggers the execution of a task
 Here, we set the id and return name of the action node.
 The method getXML() returns a string which contains name, Id, next success node(ToNode) and next failure node(TermNode)
-for the current action node, appropriately formatted as XML. 
+for the current action node, appropriately formatted as XML.
 */
 
 public class HiveActionNode extends GenericActionNode {

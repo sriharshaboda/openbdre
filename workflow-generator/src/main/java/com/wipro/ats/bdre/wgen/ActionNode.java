@@ -165,7 +165,7 @@ public class ActionNode extends OozieNode {
             SubWorkflowActionNode subWorkflowActionNode = new SubWorkflowActionNode(this);
             containingNodes.add(subWorkflowActionNode);
 
-        }  else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
+        } /* else if (processInfo.getProcessTypeId() == HIVE_GEN_ACTION) {
             DataGenerationNode dataGenerationNode = new DataGenerationNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             dataGenerationNode.setToNode(fileRegistrationNode);
@@ -252,7 +252,7 @@ public class ActionNode extends OozieNode {
         // for each plugin id check for a config group of "wf-gen" for same structure of plugin config for a  action node refer to:
         for (String pluginUniqueId:pluginUniqueIdList)
         {
-            LOGGER.info("ppid= "+processInfo.getParentProcessId()+" pluinuniqueid is "+pluginUniqueId);
+            LOGGER.info("ppid= "+processInfo.getParentProcessId()+" plugin uniqueid is "+pluginUniqueId);
             LOGGER.info("Sub process id = " + subProcessTypeId);
             processTypeSet.add(subProcessTypeId);
             // iterate through plugin config with '${subProcessId}.wf-gen' as config group,get corresponding values which are jar paths and  adding all jars to classpath
