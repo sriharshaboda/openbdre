@@ -51,7 +51,6 @@ public class HiveActionNode extends GenericActionNode {
     public void setTermNode(OozieNode termNode) {
         this.termNode = termNode;
     }
-
     /**
      * This constructor is used to set node id and process information.
      *

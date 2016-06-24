@@ -438,11 +438,6 @@
                                                			"url": "filemonitor.page",
                                                			"children": []
                                                		}, {
-                                               			"label": "New DQ Job",
-                                               			"collapse": "1",
-                                               			"url": "dqprocess.page",
-                                               			"children": []
-                                               		}, {
                                                			"label": "Ingest from Streams",
                                                			"collapse": "1",
                                                			"url": "flumepropertieswizard.page",

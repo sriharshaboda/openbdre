@@ -157,7 +157,7 @@ public class ActionNode extends OozieNode {
         } else if (processInfo.getProcessTypeId() == MAPREDUCE_ACTION) {
             MRActionNode mrActionNode = new MRActionNode(this);
             containingNodes.add(mrActionNode);
-        }else if (processInfo.getProcessTypeId() == FILE_REG_ACTION) {
+        } else if (processInfo.getProcessTypeId() == FILE_REG_ACTION) {
             FileRegistrationNode frActionNode = new FileRegistrationNode(this);
             containingNodes.add(frActionNode);
 
@@ -182,7 +182,7 @@ public class ActionNode extends OozieNode {
             containingNodes.add(lofActionNode);
             containingNodes.add(dataQualityActionNode);
             containingNodes.add(fileRegistrationNode);
-        } */ else if (processInfo.getProcessTypeId() == SEMANTIC_ACTION) {
+        }*/  else if (processInfo.getProcessTypeId() == SEMANTIC_ACTION) {
 
         } else if (processInfo.getProcessTypeId() == INGESTION) {
 
@@ -203,10 +203,10 @@ public class ActionNode extends OozieNode {
             SFTPNonOozieActionNode sftpNonOozieActionNode = new SFTPNonOozieActionNode(this);
             containingNodes.add(sftpNonOozieActionNode);
 
-        } /*else if (processInfo.getProcessTypeId() == SHELL_ACTION) {
+        } else if (processInfo.getProcessTypeId() == SHELL_ACTION) {
             ShellActionNode shellActionNode = new ShellActionNode(this);
             containingNodes.add(shellActionNode);
-        } *//*else if (processInfo.getProcessTypeId() == R_ACTION) {
+        } /*else if (processInfo.getProcessTypeId() == R_ACTION) {
             RActionNode rActionNode = new RActionNode(this);
             containingNodes.add(rActionNode);
         }*/ /*else if (processInfo.getProcessTypeId() == SPARK_ACTION) {

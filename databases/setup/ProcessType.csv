@@ -12,9 +12,7 @@
 12, 'SFTP', 1
 13, 'Data Import', 4
 15, 'File Registration', null
-16, 'DQ', 19
 17, 'Data Export', 3
-19, 'DQ_Parent', null
 20, 'MQ_Parent', null
 21, 'MQ Step', 20
 22,'Shell Action',2
