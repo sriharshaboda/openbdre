@@ -122,11 +122,11 @@ public class ActionNode extends OozieNode {
             RawLoadActionNode rawLoadActionNode = new RawLoadActionNode(this);
             containingNodes.add(rawLoadActionNode);
 
-        }/* else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
+        } else if (processInfo.getProcessTypeId() == HIVE_ACTION) {
             HiveActionNode hiveActionNode = new HiveActionNode(this);
             containingNodes.add(hiveActionNode);
 
-        } */else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
+        } else if (processInfo.getProcessTypeId() == DATA_IMPORT_ACTION) {
             ImportActionNode importActionNode = new ImportActionNode(this);
             FileRegistrationNode fileRegistrationNode = new FileRegistrationNode(this);
             importActionNode.setToNode(fileRegistrationNode);
@@ -146,7 +146,7 @@ public class ActionNode extends OozieNode {
             containingNodes.add(baseLoadActionNode);
         } else if (processInfo.getProcessTypeId() == ETL_ACTION) {
 
-        } /*else if (processInfo.getProcessTypeId() == PIG_ACTION) {
+        } else if (processInfo.getProcessTypeId() == PIG_ACTION) {
             PigActionNode pigActionNode = new PigActionNode(this);
             containingNodes.add(pigActionNode);
 
@@ -157,11 +157,11 @@ public class ActionNode extends OozieNode {
         } else if (processInfo.getProcessTypeId() == MAPREDUCE_ACTION) {
             MRActionNode mrActionNode = new MRActionNode(this);
             containingNodes.add(mrActionNode);
-        } else if (processInfo.getProcessTypeId() == FILE_REG_ACTION) {
+        }else if (processInfo.getProcessTypeId() == FILE_REG_ACTION) {
             FileRegistrationNode frActionNode = new FileRegistrationNode(this);
             containingNodes.add(frActionNode);
 
-        }*/else if (processInfo.getProcessTypeId() == SUB_WF_ACTION) {
+        }else if (processInfo.getProcessTypeId() == SUB_WF_ACTION) {
             SubWorkflowActionNode subWorkflowActionNode = new SubWorkflowActionNode(this);
             containingNodes.add(subWorkflowActionNode);
 
@@ -299,18 +299,7 @@ public class ActionNode extends OozieNode {
             {
                 LOGGER.info("node class is "+s);
             }
-            //listOfNodeClasses.addAll(nodesList);
 
-            // }
-
-            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.LOFActionNode");
-            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.DataQualityActionNode");
-            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.FileRegistrationNode");*/
-            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.RawLoadActionNode");
-            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.StageLoadActionNode");
-            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.BaseLoadActionNode");*/
-            /*listOfNodeClasses.add("com.wipro.ats.bdre.wgen.ImportActionNode");
-            listOfNodeClasses.add("com.wipro.ats.bdre.wgen.FileRegistrationNode");*/
             List<Class> listOfClassesToLoad = new LinkedList<>();
             List<GenericActionNode> listOfNodeObjects = new LinkedList<>();
             //iterate through all nodes and instantiate them

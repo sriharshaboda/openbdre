@@ -438,11 +438,6 @@
                                                			"url": "filemonitor.page",
                                                			"children": []
                                                		}, {
-                                               			"label": "Generate Bulk Data",
-                                               			"collapse": "1",
-                                               			"url": "datagen.page",
-                                               			"children": []
-                                               		}, {
                                                			"label": "New DQ Job",
                                                			"collapse": "1",
                                                			"url": "dqprocess.page",
