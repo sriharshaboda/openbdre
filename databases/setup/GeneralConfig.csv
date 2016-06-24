@@ -10,11 +10,8 @@
 '11','param','Parameters','Additional parameters', 1,'true','text', 1
 '11','program','Program Main Class','Program main class', 1,'true','text', 1
 '13','imp-common','Import Configuration','RDBMS Import Configuration', 1,'true','text', 1
-'14','data','Data-generate Configuration',' ', 1,'true','text', 1
-'14','table','table Schema Configuration',' ', 1,'true','text', 1
 '15','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '17','exp-common','Export Configuration','RDBMS Export Configuration', 1,'true','text', 1
-'18','credential','Credential Configuration','Credentials for authentication',1,'true|false','option', 1
 '20','credential','CredentialConfiguration','Credentials for authentication',1,'true|false','option', 1
 '21','mqimport','MQ Import Configuration','Messaging Queue import configuration', 1,'true','text', 1
 '22','param','Parameters','Additional parameters', 1,'true','text', 1
@@ -49,10 +46,6 @@
 'default_val.17','mappers','exp-common','properties for data export',1,'1','text', 1
 'default_val.17','password','exp-common','properties for data export',1,'db_password','text', 1
 'default_val.17','username','exp-common','properties for data export',1,'db_username','text', 1
-'default_val.18','password_enabled','credential','Credentials for authentication', 1,'true','text', 1
-'testDataGen','data-gen-id.1','data','Generating Date',1,'randomDate','text', 1
-'testDataGen','data-gen-id.2','data','Generating number',1,'randomNumber','text', 1
-'testDataGen','data-gen-id.3','data','Generating String',1,'randomRegexPattern','text', 1
 'default_val.19','password_enabled','credential','Credentials for authentication', 1,'true','text', 1
 'default_val.16','file.delimiter.regex','dq','File delimiter',1,',','text', 1
 'default_val.16','min.pass.threshold.percent','dq','Min pass threshold percentage',1,'90','text', 1
