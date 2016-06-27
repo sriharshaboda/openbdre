@@ -43,6 +43,10 @@ public class GetProcess extends MetadataAPIBase {
             {"ieid", "instance-exec-id", "Instance Exec Id for a given run"}
 
     };
+    private static final String SUBPROCESSID = "sub-process-id";
+    private static final String[][] PARAMS_STRUCTURE_FOR_SUBPROCESS = {
+            {"p", SUBPROCESSID, "Sub process id"}
+    };
 
     @Autowired
     ProcessDAO processDAO;
@@ -192,5 +196,31 @@ public class GetProcess extends MetadataAPIBase {
         return processInfo;
     }
 
+    public ProcessInfo getParentInfoFromSubProcess(String[] params) {
+        try {
+
+            CommandLine commandLine = getCommandLine(params, PARAMS_STRUCTURE_FOR_SUBPROCESS);
+            String subPid = commandLine.getOptionValue(SUBPROCESSID);
+            LOGGER.info("Sub Pid  " + subPid);
+            Process subProcess = processDAO.get(Integer.parseInt(subPid));
+            Process parentProcess = subProcess.getProcess();
+            Integer parentProcessId = parentProcess.getProcessId();
+            LOGGER.debug("parent process id="+parentProcessId);
+            Process parentProcessWithAllFields=processDAO.get(parentProcessId);
+            Integer parentProcessTypeId = parentProcessWithAllFields.getProcessType().getProcessTypeId();
+            LOGGER.debug("parentProcessType= "+parentProcessTypeId);
+            Integer busDomainId = subProcess.getBusDomain().getBusDomainId();
+            LOGGER.debug("business domain id= "+busDomainId);
+            ProcessInfo processInfo = new ProcessInfo();
+            processInfo.setBusDomainId(busDomainId);
+            processInfo.setProcessTypeId(parentProcessTypeId);
+            processInfo.setProcessId(parentProcessId);
+            return processInfo;
+        } catch (Exception e) {
+            LOGGER.error("Error  occurred", e);
+            throw new MetadataException(e);
+        }
+
+    }
 
 }
