@@ -15,6 +15,7 @@ package com.wipro.ats.bdre.pdeploy;
 
 import com.wipro.ats.bdre.MDConfig;
 import com.wipro.ats.bdre.exception.MetadataException;
+import com.wipro.ats.bdre.md.api.GetSubProcessTypeList;
 import com.wipro.ats.bdre.md.api.HaltDeploy;
 import com.wipro.ats.bdre.md.api.InitDeploy;
 import com.wipro.ats.bdre.md.api.TermDeploy;
@@ -62,8 +63,10 @@ public class ProcessDeploy implements Runnable {
         String[] params = {"--deployment-id", pdq.getDeploymentId().toString()};
         //using Apache Commons Exec library
 
+        String subTypeParams[]={"-p",pdq.getProcessId().toString(),"-u",pdq.getUserName()};
+        String subProcessTypeList=new GetSubProcessTypeList().getUniqueListOfSubProcessTypes(subTypeParams);
         String sCommandString;
-        String command = "sh " + pdq.getDeployScriptLocation() + " " + pdq.getBusDomainId() + " " + pdq.getProcessTypeId() + " " + pdq.getProcessId() + " " + pdq.getUserName();
+        String command = "sh " + pdq.getDeployScriptLocation() + " " + pdq.getBusDomainId() + " " + pdq.getProcessTypeId() + " " + pdq.getProcessId() + " " + pdq.getUserName()+" "+subProcessTypeList;
         sCommandString = command;
         CommandLine oCmdLine = CommandLine.parse(sCommandString);
         LOGGER.debug("executing command with deploymentId=" + pdq.getDeploymentId());

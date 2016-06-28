@@ -22,5 +22,6 @@ busDomainId=$1
 processTypeId=$2
 processId=$3
 userName=$4
+subProcessTypeList=$5
 
-sh $(dirname $0)/process-type-$processTypeId.sh $busDomainId $processTypeId $processId $userName
+sh $(dirname $0)/process-type-$processTypeId.sh $busDomainId $processTypeId $processId $userName $subProcessTypeList
