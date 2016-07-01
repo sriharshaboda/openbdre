@@ -447,12 +447,7 @@
                                                			"collapse": "1",
                                                			"url": "/aui/pages/menu.page",
                                                			"children": []
-                                               		}, {
-                                               			"label": "Hive Table Migration",
-                                               			"collapse": "1",
-                                               			"url": "hivetablemigration.page",
-                                               			"children": []
-                                               		} ]
+                                               		}]
                                                	};
 
                                     var administration  = {

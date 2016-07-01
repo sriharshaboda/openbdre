@@ -276,7 +276,7 @@
                                                 <hr/>
 
                                                 <!-- from here on contains logic for adding a new entry-->
-                                                <form class="form-horizontal" role="form" ng-if="genConfig.key == 'param'">
+                                                <form class="form-horizontal" role="form" ng-if="genConfig.type == 'text'">
                                                     <div class="form-group">
                                                         <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey"><spring:message code="wfdesigner.page.propkey_name"/></label>
                                                         <div class="col-sm-10">

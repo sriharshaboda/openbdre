@@ -217,7 +217,7 @@ public class ActionNode extends OozieNode {
         } else if (processInfo.getProcessTypeId() == CRAWLER_CHILD_ACTION) {
             CrawlerActionNode crawlerActionNode = new CrawlerActionNode(this);
             containingNodes.add(crawlerActionNode);
-        } else if (processInfo.getProcessTypeId() == MIGRATION_PREPROCESSOR_ACTION) {
+        } /*else if (processInfo.getProcessTypeId() == MIGRATION_PREPROCESSOR_ACTION) {
             MigrationPreprocessorActionNode migrationPreprocessorActionNodeNode = new MigrationPreprocessorActionNode(this);
             containingNodes.add(migrationPreprocessorActionNodeNode);
         } else if (processInfo.getProcessTypeId() == SOURCE_STAGE_LOAD_ACTION) {
@@ -232,7 +232,7 @@ public class ActionNode extends OozieNode {
         } else if (processInfo.getProcessTypeId() == REGISTER_PARTITIONS_ACTION) {
             RegisterPartitionsActionNode registerPartitionsActionNode = new RegisterPartitionsActionNode(this);
             containingNodes.add(registerPartitionsActionNode);
-        } else if (!processTypeSet.contains(processInfo.getProcessTypeId())) {
+        }*/ else if (!processTypeSet.contains(processInfo.getProcessTypeId())) {
             throw new BDREException("Don't know how to handle processInfo.getProcessTypeId()=" + processInfo.getProcessTypeId());
         }
 
