@@ -68,7 +68,7 @@ public class ProcessLogAPI extends MetadataAPIBase {
             List<ProcessLogInfo> logList=processLogDAO.listLog(processLogInfo);
             for(ProcessLogInfo log: logList){
 
-                   if("ACCESSGRANTED".equals( processDAO.securityCheck(log.getParentProcessId(), principal.getName(), "read")))
+                   if("ACCESS GRANTED".equals( processDAO.securityCheck(log.getParentProcessId(), principal.getName(), "read")))
                        listLog.add(log);
 
             }

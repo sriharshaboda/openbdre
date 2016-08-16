@@ -822,7 +822,7 @@ public String securityCheck(Integer processId,String username,String action){
     session.getTransaction().commit();
     session.close();
     if (userRolesNameList.contains("ROLE_ADMIN"))
-        return "NOT REQUIRED";
+        return ACCESSGRANTED;
     List<Integer> readList=new ArrayList<>();
     readList.add(4);
     readList.add(6);
