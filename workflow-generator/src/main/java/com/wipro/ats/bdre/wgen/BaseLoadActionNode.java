@@ -14,6 +14,7 @@
 
 package com.wipro.ats.bdre.wgen;
 
+import com.wipro.ats.bdre.md.api.GetProperties;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
 
 /**
@@ -62,18 +63,27 @@ public class BaseLoadActionNode extends GenericActionNode {
         if (this.getProcessInfo().getParentProcessId() == 0) {
             return "";
         }
+
+        GetProperties getPropertiesOfBaseTable = new GetProperties();
+        java.util.Properties basePropertiesOfTable = getPropertiesOfBaseTable.getProperties(getId().toString(), "base-table");
+        String baseTable = basePropertiesOfTable.getProperty("table_name");
+        String baseDb = basePropertiesOfTable.getProperty("table_name");
+
+
+
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<action name=\"" + getName() + "\">\n" +
-                "<java>\n" +
+        ret.append("<action name=\"" + getName() + "\">\n" +
+                "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +
-                "            <main-class>com.wipro.ats.bdre.im.etl.api.oozie.OozieBaseLoad</main-class>\n" +
-                "            <arg>--process-id</arg>\n" +
-                "            <arg>" + getId() + "</arg>\n" +
-                "            <arg>--instance-exec-id</arg>\n" +
-                "            <arg>${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</arg>\n" +
-                "            <capture-output/>\n" +
-                "        </java>\n" +
+                "            <job-xml>hive-site.xml</job-xml>\n"+
+                "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
+                "            <script>base-load.hql</script>\n"+
+
+                "            <param>instanceExecId=${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</param>\n" +
+
+
+                "        </hive2>\n" +
                 "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
                 "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
                 "    </action>");

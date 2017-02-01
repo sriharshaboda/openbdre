@@ -81,13 +81,13 @@ public class RawLoadActionNode extends GenericActionNode {
 
         StringBuilder ret = new StringBuilder();
         ret.append(
-                        "<action name=\"" + getName() + "\">\n" +
+                        "\n<action name=\"" + getName() + "\">\n" +
                         "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
                         "            <job-tracker>${jobTracker}</job-tracker>\n" +
                         "            <name-node>${nameNode}</name-node>\n" +
                         "            <job-xml>hive-site.xml</job-xml>\n"+
                         "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
-                        "            <script>hql/rawload-hive2.hql</script>\n"+
+                        "            <script>raw-load.hql</script>\n"+
                         "            <param>rawtableschema="+getRawTableSchema(getId())+"</param>\n"+
 
                      /*   "            <arg>--process-id</arg>\n" +
@@ -101,8 +101,7 @@ public class RawLoadActionNode extends GenericActionNode {
                      */
                         "           <param>rawtablename="+getRawTableName(getId())+"</param>\n"+
                         "           <param>lof=${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</param>\n"+
-                        "           <param>lob=${wf:actionData(\"init-job\")[\"file-list-map.FileBatchList." + getId() + "\"]}</param>\n"+
-                        "            <capture-output/>\n" +
+                        "           <param>lob=${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</param>\n"+
                         "        </hive2>\n" +
                         "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
                         "        <error to=\"" + getTermNode().getName() + "\"/>\n" +

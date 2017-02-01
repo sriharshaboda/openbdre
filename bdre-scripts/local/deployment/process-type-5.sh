@@ -34,6 +34,7 @@ then exit 1
 fi
 fi
 
+
 if [ "$workflowTypeId" == "3" ]; then
 echo 'Generating airflow dag'
 java -cp "$BDRE_HOME/lib/workflow-generator/*" com.wipro.ats.bdre.wgen.dag.DAGGenerator --parent-process-id $processId --file-name $filename.py --username $userName
@@ -86,6 +87,25 @@ then exit 1
 fi
 fi
 
+cp $hadoopConfDir/hive-site.xml $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/raw-load.hql $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/stage-load.hql $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/base-load.hql $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
 
 #copy generated jar for data-import
 cp -f $BDRE_HOME/lib/etl-driver/* $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId/lib
