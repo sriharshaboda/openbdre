@@ -49,10 +49,10 @@ public class WorkflowPrinterTest {
     private static List<ProcessInfo> getProcessBeans2() {
         //Unit test with test data
         List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
-        ProcessInfo parent = new ProcessInfo(9, "sample parent", "ETL Process", 1, 5, 0, false, 0, "12");
-        ProcessInfo sub1 = new ProcessInfo(12, "sample sub", "RAW_LOAD_ACTION Process", 1, 6, 9, false, 0, "13");
-        ProcessInfo sub2 = new ProcessInfo(13, "sample sub", "STAGE_LOAD_ACTION Process", 1, 7, 9, false, 0, "14");
-        ProcessInfo sub3 = new ProcessInfo(14, "sample sub", "BASE_LOAD_ACTION Process", 1, 8, 9, false, 0, "9");
+        ProcessInfo parent = new ProcessInfo(1, "sample parent", "ETL Process", 1, 5, 0, false, 0, "2");
+        ProcessInfo sub1 = new ProcessInfo(2, "sample sub", "RAW_LOAD_ACTION Process", 1, 6, 1, false, 0, "3,4");
+        ProcessInfo sub2 = new ProcessInfo(3, "sample sub", "STAGE_LOAD_ACTION Process", 1, 7, 1, false, 0, "1");
+        ProcessInfo sub3 = new ProcessInfo(4, "sample sub", "BASE_LOAD_ACTION Process", 1, 8, 1, false, 0, "1");
         //ProcessInfo sub4 = new ProcessInfo(5, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "6");
         // ProcessInfo sub5 = new ProcessInfo(6, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "7");
         //ProcessInfo sub6 = new ProcessInfo(7, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "1");
@@ -80,7 +80,7 @@ public class WorkflowPrinterTest {
     }
 
     @Test
-
+    @Ignore
     public void testExecute2() throws Exception {
         List<ProcessInfo> processInfos = getProcessBeans2();
         String workflowXML = new WorkflowPrinter().execute(processInfos, "test-workflow").getXml().toString();

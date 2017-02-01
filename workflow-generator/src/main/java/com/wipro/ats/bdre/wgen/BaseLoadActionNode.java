@@ -67,7 +67,7 @@ public class BaseLoadActionNode extends GenericActionNode {
         GetProperties getPropertiesOfBaseTable = new GetProperties();
         java.util.Properties basePropertiesOfTable = getPropertiesOfBaseTable.getProperties(getId().toString(), "base-table");
         String baseTable = basePropertiesOfTable.getProperty("table_name");
-        String baseDb = basePropertiesOfTable.getProperty("table_name");
+        String baseDb = basePropertiesOfTable.getProperty("table_db");
 
 
 
@@ -79,6 +79,8 @@ public class BaseLoadActionNode extends GenericActionNode {
                 "            <job-xml>hive-site.xml</job-xml>\n"+
                 "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
                 "            <script>base-load.hql</script>\n"+
+                "             <param>baseDb="+baseDb+"</param>\n"+
+                "             <param>baseTable="+baseTable+"</param>\n"+
 
                 "            <param>instanceExecId=${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</param>\n" +
 
