@@ -49,10 +49,10 @@ public class WorkflowPrinterTest {
     private static List<ProcessInfo> getProcessBeans2() {
         //Unit test with test data
         List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
-        ProcessInfo parent = new ProcessInfo(1, "sample parent", "ETL Process", 1, 5, 0, false, 0, "2");
-        ProcessInfo sub1 = new ProcessInfo(2, "sample sub", "RAW_LOAD_ACTION Process", 1, 6, 1, false, 0, "3,4");
-        ProcessInfo sub2 = new ProcessInfo(3, "sample sub", "STAGE_LOAD_ACTION Process", 1, 7, 1, false, 0, "1");
-        ProcessInfo sub3 = new ProcessInfo(4, "sample sub", "BASE_LOAD_ACTION Process", 1, 8, 1, false, 0, "1");
+        ProcessInfo parent = new ProcessInfo(66, "sample parent", "ETL Process", 1, 5, 0, false, 0, "67");
+        ProcessInfo sub1 = new ProcessInfo(67, "sample sub", "RAW_LOAD_ACTION Process", 1, 6, 66, false, 0, "68");
+        ProcessInfo sub2 = new ProcessInfo(68, "sample sub", "STAGE_LOAD_ACTION Process", 1, 7, 66, false, 0, "69");
+        ProcessInfo sub3 = new ProcessInfo(69, "sample sub", "BASE_LOAD_ACTION Process", 1, 8, 66, false, 0, "66");
         //ProcessInfo sub4 = new ProcessInfo(5, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "6");
         // ProcessInfo sub5 = new ProcessInfo(6, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "7");
         //ProcessInfo sub6 = new ProcessInfo(7, "sample sub", "Semantic Process", 1, 1, 1, false, 0, "1");
@@ -80,14 +80,14 @@ public class WorkflowPrinterTest {
     }
 
     @Test
-    @Ignore
+
     public void testExecute2() throws Exception {
         List<ProcessInfo> processInfos = getProcessBeans2();
         String workflowXML = new WorkflowPrinter().execute(processInfos, "test-workflow").getXml().toString();
         PrintWriter out = new PrintWriter("unitTest2.workflow.xml");
         out.println(workflowXML);
         out.close();
-        OozieCLI oozieCLI = new OozieCLI();
-        oozieCLI.run(new String[]{"validate", "unitTest2.workflow.xml"});
+        //OozieCLI oozieCLI = new OozieCLI();
+        //oozieCLI.run(new String[]{"validate", "unitTest2.workflow.xml"});
     }
 }

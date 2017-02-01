@@ -14,7 +14,15 @@
 
 package com.wipro.ats.bdre.wgen;
 
+import com.sun.org.apache.xalan.internal.xsltc.util.IntegerArray;
+import com.wipro.ats.bdre.md.api.GetProperties;
+import com.wipro.ats.bdre.md.api.InitJob;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Created by arijit on 12/21/14.s
@@ -68,26 +76,91 @@ public class RawLoadActionNode extends GenericActionNode {
                 fileListNode = oozieNode;
             }
         }
+        Integer processId = getId();
+
+
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<action name=\"" + getName() + "\">\n" +
-                "        <java>\n" +
-                "            <job-tracker>${jobTracker}</job-tracker>\n" +
-                "            <name-node>${nameNode}</name-node>\n" +
-                "            <main-class>com.wipro.ats.bdre.im.etl.api.oozie.OozieRawLoad</main-class>\n" +
-                "            <arg>--process-id</arg>\n" +
-                "            <arg>" + getId() + "</arg>\n" +
-                "            <arg>--instance-exec-id</arg>\n" +
-                "            <arg>${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</arg>\n" +
-                "            <arg>--list-of-files</arg>\n" +
-                "            <arg>${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</arg>\n" +
-                "            <arg>--list-of-file-batchIds</arg>\n" +
-                "            <arg>${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</arg>\n" +
-                "            <capture-output/>\n" +
-                "        </java>\n" +
-                "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
-                "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
-                "    </action>");
+        ret.append(
+                        "<action name=\"" + getName() + "\">\n" +
+                        "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
+                        "            <job-tracker>${jobTracker}</job-tracker>\n" +
+                        "            <name-node>${nameNode}</name-node>\n" +
+                        "            <job-xml>hive-site.xml</job-xml>\n"+
+                        "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
+                        "            <script>hql/rawload-hive2.hql</script>\n"+
+                        "            <param>rawtableschema="+getRawTableSchema(getId())+"</param>\n"+
+
+                     /*   "            <arg>--process-id</arg>\n" +
+                        "            <arg>" + getId() + "</arg>\n" +
+                        "            <arg>--instance-exec-id</arg>\n" +
+                        "            <arg>${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</arg>\n" +
+                        "            <arg>--list-of-files</arg>\n" +
+                        "            <arg>${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</arg>\n" +
+                        "            <arg>--list-of-file-batchIds</arg>\n" +
+                        "            <arg>${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</arg>\n" +
+                     */
+                        "           <param>rawtablename="+getRawTableName(getId())+"</param>\n"+
+                        "           <param>lof=${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</param>\n"+
+                        "           <param>lob=${wf:actionData(\"init-job\")[\"file-list-map.FileBatchList." + getId() + "\"]}</param>\n"+
+                        "            <capture-output/>\n" +
+                        "        </hive2>\n" +
+                        "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
+                        "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
+                        "    </action>");
 
         return ret.toString();
+    }
+
+    public String getRawTableName(Integer processId){
+        GetProperties getPropertiesOfRawTable = new GetProperties();
+        java.util.Properties rawPropertiesOfTable = getPropertiesOfRawTable.getProperties(processId.toString(), "raw-table");
+        String rawTableName = rawPropertiesOfTable.getProperty("table_name");
+        String rawTableDbName = rawPropertiesOfTable.getProperty("table_db");
+        return rawTableDbName+"."+rawTableName;
+    }
+
+    public String getRawTableSchema(Integer processId){
+        GetProperties getPropertiesOfRawTable = new GetProperties();
+        java.util.Properties rawPropertiesOfTable = getPropertiesOfRawTable.getProperties(processId.toString(), "raw-table");
+        String rawTableName = rawPropertiesOfTable.getProperty("table_name");
+        String rawTableDbName = rawPropertiesOfTable.getProperty("table_db");
+        String rawColumnList = "";
+
+        // fetching column names in a string list from properties with raw-columns as config group
+        GetProperties getPropertiesOfRawColumns = new GetProperties();
+        java.util.Properties rawPropertiesOfColumns = getPropertiesOfRawColumns.getProperties(processId.toString(), "raw-cols");
+        Enumeration columns = rawPropertiesOfColumns.propertyNames();
+        List<String> orderOfCloumns = Collections.list(columns);
+        Collections.sort(orderOfCloumns);
+        List<String> rawColumns = new ArrayList<String>();
+        if (!rawPropertiesOfColumns.isEmpty()) {
+            for (String columnOrder : orderOfCloumns) {
+                String key = columnOrder;
+                rawColumns.add(rawPropertiesOfColumns.getProperty(key));
+            }
+        }
+
+        // fetching column datatypes in a string list from properties with raw-data-types as config group
+        GetProperties getPropertiesOfRawDataTypes = new GetProperties();
+        java.util.Properties rawPropertiesOfDataTypes = getPropertiesOfRawDataTypes.getProperties(processId.toString(), "raw-data-types");
+        Enumeration dataTypes = rawPropertiesOfDataTypes.propertyNames();
+        List<String> orderOfDataTypes = Collections.list(dataTypes);
+        Collections.sort(orderOfDataTypes);
+        List<String> rawDataTypes = new ArrayList<String>();
+        if (!rawPropertiesOfColumns.isEmpty()) {
+            for (String columnOrder : orderOfDataTypes) {
+                String key = columnOrder;
+                rawDataTypes.add(rawPropertiesOfDataTypes.getProperty(key));
+            }
+        }
+
+        // forming a comma separated string in the form of col1 datatype1, col2 datatype2, col3 datatype3 etc.
+        for (int i = 0; i < rawColumns.size(); i++) {
+            rawColumnList += rawColumns.get(i) + " " + rawDataTypes.get(i) + ",";
+        }
+
+        String rawColumnsWithDataTypes = rawColumnList.substring(0, rawColumnList.length() - 1);
+
+        return rawTableDbName + "." + rawTableName + " ( " + rawColumnsWithDataTypes + " ) ";
     }
 }
