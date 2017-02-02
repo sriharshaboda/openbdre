@@ -80,26 +80,15 @@ public class RawLoadActionNode extends GenericActionNode {
 
 
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<credentials>\n" +
-                "        <credential name=\"hs2-creds\" type=\"hive2\">\n" +
-                "            <property>\n" +
-                "                <name>hive2.server.principal</name>\n" +
-                "                <value>hive/bigdata-hive2-dev.dish.com@HDP.DEV</value>\n" +
-                "            </property>\n" +
-                "            <property>\n" +
-                "                <name>hive2.jdbc.url</name>\n" +
-                "                <value>jdbc:hive2://bigdata-hive2-dev.dish.com:10000/default</value>\n" +
-                "            </property>\n" +
-                "        </credential>\n" +
-                "    </credentials>"+
-                        "\n<action name=\"" + getName() + "\"cred=\"hs2-creds\">\n" +
-                        "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
-                        "            <job-tracker>${jobTracker}</job-tracker>\n" +
-                        "            <name-node>${nameNode}</name-node>\n" +
-                        "            <job-xml>hive-site.xml</job-xml>\n"+
-                        "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
-                        "            <script>raw-load.hql</script>\n"+
-                        "            <param>rawtableschema="+getRawTableSchema(getId())+"</param>\n"+
+
+        ret.append("\n<action name=\"" + getName() + "\" cred=\"hs2-creds\">\n" +
+                "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
+                "            <job-tracker>${jobTracker}</job-tracker>\n" +
+                "            <name-node>${nameNode}</name-node>\n" +
+                "            <job-xml>hive-site.xml</job-xml>\n"+
+                "            <jdbc-url>jdbc:hive2://localhost:10000/default</jdbc-url> \n"+
+                "            <script>raw-load.hql</script>\n"+
+                "            <param>rawtableschema="+getRawTableSchema(getId())+"</param>\n"+
 
                      /*   "            <arg>--process-id</arg>\n" +
                         "            <arg>" + getId() + "</arg>\n" +
@@ -110,13 +99,13 @@ public class RawLoadActionNode extends GenericActionNode {
                         "            <arg>--list-of-file-batchIds</arg>\n" +
                         "            <arg>${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</arg>\n" +
                      */
-                        "           <param>rawtablename="+getRawTableName(getId())+"</param>\n"+
-                        "           <param>lof=${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</param>\n"+
-                        "           <param>lob=${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</param>\n"+
-                        "        </hive2>\n" +
-                        "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
-                        "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
-                        "    </action>");
+                "           <param>rawtablename="+getRawTableName(getId())+"</param>\n"+
+                "           <param>lof=${wf:actionData(\"init-job\")[\"file-list-map.FileList." + getId() + "\"]}</param>\n"+
+                "           <param>lob=${wf:actionData(\"init-job\")[\"batch-list-map.FileBatchList." + getId() + "\"]}</param>\n"+
+                "        </hive2>\n" +
+                "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
+                "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
+                "    </action>");
 
         return ret.toString();
     }
