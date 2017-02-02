@@ -130,7 +130,7 @@ public class StageLoadActionNode extends GenericActionNode {
 
 
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<action name=\"" + getName() + "\">\n" +
+        ret.append("\n<action name=\"" + getName() + "\" cred=\"hs2-creds\" >\n" +
                 "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +

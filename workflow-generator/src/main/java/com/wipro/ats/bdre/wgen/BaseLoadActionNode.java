@@ -73,7 +73,7 @@ public class BaseLoadActionNode extends GenericActionNode {
 
         StringBuilder ret = new StringBuilder();
         ret.append("<action name=\"" + getName() + "\">\n" +
-                "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
+                "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\" cred=\"hs2-creds\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +
                 "            <job-xml>hive-site.xml</job-xml>\n"+

@@ -69,13 +69,26 @@ public class HiveActionNode extends GenericActionNode {
             return "";
         }
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<action name=\"" + getName());
-        if (isSecurityEnabled(this.getProcessInfo().getParentProcessId(), "security") != 0) {
-            ret.append(" cred='hive_credentials'");
-        }
+        ret.append("\n<credentials>\n" +
+                "        <credential name=\"hs2-creds\" type=\"hive2\">\n" +
+                "            <property>\n" +
+                "                <name>hive2.server.principal</name>\n" +
+                "                <value>hive/bigdata-hive2-dev.dish.com@HDP.DEV</value>\n" +
+                "            </property>\n" +
+                "            <property>\n" +
+                "                <name>hive2.jdbc.url</name>\n" +
+                "                <value>jdbc:hive2://bigdata-hive2-dev.dish.com:10000/default</value>\n" +
+                "            </property>\n" +
+                "        </credential>\n" +
+                "    </credentials>"+
+                "\n<action name=\"" + getName());
+            ret.append(" cred='hs2-creds'");
+
 
         ret.append("\">\n" +
-                "        <hive xmlns=\"uri:oozie:hive-action:0.2\">\n" +
+
+
+                "        <hive xmlns=\"uri:oozie:hive-action:0.2\"cred=\"hs2-creds\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +
 
