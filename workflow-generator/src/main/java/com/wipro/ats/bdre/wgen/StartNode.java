@@ -35,7 +35,20 @@ public class StartNode extends OozieNode {
 
     @Override
     public String getXML() {
-        return "\n<start to='" + getToNode().getName() + "'></start>";
+        return "\n<credentials>\n" +
+                "        <credential name=\"hs2-creds\" type=\"hive2\">\n" +
+                "            <property>\n" +
+                "                <name>hive2.server.principal</name>\n" +
+                "                <value>hive/bigdata-hive2-dev.dish.com@HDP.DEV</value>\n" +
+                "            </property>\n" +
+                "            <property>\n" +
+                "                <name>hive2.jdbc.url</name>\n" +
+                "                <value>jdbc:hive2://bigdata-hive2-dev.dish.com:10000/default</value>\n" +
+                "            </property>\n" +
+                "        </credential>\n" +
+                "    </credentials>"+
+
+                "\n<start to='" + getToNode().getName() + "'></start>";
     }
 
 }
