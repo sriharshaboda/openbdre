@@ -17,6 +17,5 @@
 #	echo "[Error] $1 script failed" 1>&2
 #	exit 1
 #fi
-
-beelinecommand="beeline -u jdbc:hive2://localhost:10000/default -f $1 --hivevar "'"$2"'" --hivevar "'"$3"'" --hivevar "'"$4"'" --hivevar "'"$5"'""
+beelinecommand="beeline -u jdbc:hive2://localhost:10000/default -n cloudera -f $1 --hivevar "'"$2"'" --hivevar "'"$3"'" --hivevar "'"$4"'" --hivevar "'"$5"'" --hivevar "'"$6"'" --hivevar "'"$7"'" --hivevar "'"$8"'" --hivevar "'"$9"'" --hivevar ${10} --hivevar ${11} --hivevar "'"${12}"'" --hivevar "'"${13}"'" --hivevar "'"${14}"'" --hivevar "'"${15}"'"   "
 eval $beelinecommand

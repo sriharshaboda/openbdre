@@ -164,7 +164,7 @@ public class StageLoadActionNode extends GenericActionNode {
                 "        <shell xmlns=\"uri:oozie:shell-action:0.1\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n"+
-                "            <exec>hive-shell-executor.sh</exec>\n"+
+                "            <exec>stage-load-executor.sh</exec>\n"+
                 "            <argument>stage-load.hql</argument>\n"+
                 "            <argument>rawViewDbName="+rawViewDbName +"</argument>\n"+
                 "            <argument>rawViewName="+rawViewName +"</argument>\n"+
