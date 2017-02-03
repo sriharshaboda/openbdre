@@ -130,7 +130,7 @@ public class StageLoadActionNode extends GenericActionNode {
 
 
         StringBuilder ret = new StringBuilder();
-        ret.append("\n<action name=\"" + getName() + "\" cred=\"hs2-creds\" >\n" +
+      /*  ret.append("\n<action name=\"" + getName() + "\" cred=\"hs2-creds\" >\n" +
                 "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +
@@ -159,7 +159,34 @@ public class StageLoadActionNode extends GenericActionNode {
                 "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
                 "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
                 "    </action>");
-
+*/
+        ret.append("\n<action name=\"" + getName() + "\">\n" +
+                "        <shell xmlns=\"uri:oozie:shell-action:0.1\">\n" +
+                "            <job-tracker>${jobTracker}</job-tracker>\n" +
+                "            <name-node>${nameNode}</name-node>\n"+
+                "            <exec>hive-shell-executor.sh</exec>\n"+
+                "            <argument>stage-load.hql</argument>\n"+
+                "            <argument>rawViewDbName="+rawViewDbName +"</argument>\n"+
+                "            <argument>rawViewName="+rawViewName +"</argument>\n"+
+                "            <argument>viewColumnsWithDataTypes="+viewColumnsWithDataTypes +"</argument>\n"+
+                "            <argument>rawTableDbName="+rawTableDbName +"</argument>\n"+
+                "            <argument>rawTableName="+rawTableName +"</argument>\n"+
+                "            <argument>baseTableDbName="+baseTableDbName +"</argument>\n"+
+                "            <argument>baseTableName="+baseTableName +"</argument>\n"+
+                "            <argument>baseColumnsWithDataTypes="+baseColumnsWithDataTypes +"</argument>\n"+
+                "            <argument>partitionKeys="+partitionKeys +"</argument>\n"+
+                "            <argument>partitionColumns="+partitionColumns +"</argument>\n"+
+                "            <argument>fieldNames="+fieldNames +"</argument>\n"+
+                "            <argument>instanceExecId=${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</argument>\n" +
+                "            <argument>minBatchId=${wf:actionData(\"init-job\")[\"min-batch-id-map." + getId() + "\"]}</argument>\n" +
+                "            <argument>maxBatchId=${wf:actionData(\"init-job\")[\"max-batch-id-map." + getId() + "\"]}</argument>\n" +
+                "            <file>stage-load.hql</file>\n"+
+                "            <file>stage-load-executor.sh</file>\n"+
+                "            <file>env.sh</file>\n"+
+                "        </shell>\n" +
+                "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
+                "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
+                "    </action>");
         return ret.toString();
     }
 

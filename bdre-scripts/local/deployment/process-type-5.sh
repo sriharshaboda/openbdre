@@ -107,6 +107,26 @@ if [ $? -eq 1 ]
 then exit 1
 fi
 
+cp $BDRE_HOME/bdre-scripts/hql/raw-load-executor.sh $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/stage-load-executor.sh $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/base-load-executor.sh $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
+cp $BDRE_HOME/bdre-scripts/hql/env.sh $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId
+if [ $? -eq 1 ]
+then exit 1
+fi
+
 #copy generated jar for data-import
 cp -f $BDRE_HOME/lib/etl-driver/* $BDRE_APPS_HOME/$busDomainId/$processTypeId/$processId/lib
 if [ $? -eq 1 ]

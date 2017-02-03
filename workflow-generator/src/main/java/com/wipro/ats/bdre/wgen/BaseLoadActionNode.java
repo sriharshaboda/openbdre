@@ -26,7 +26,7 @@ import com.wipro.ats.bdre.md.beans.ProcessInfo;
 Action nodes are the mechanism by which a workflow triggers the execution of a task
 Here, we set the id and return name of the action node.
 The method getXML() returns a string which contains name, Id, next success node(ToNode) and next failure node(TermNode)
-for the current action node, appropriately formatted as XML. 
+for the current action node, appropriately formatted as XML.
 */
 
 public class BaseLoadActionNode extends GenericActionNode {
@@ -72,7 +72,7 @@ public class BaseLoadActionNode extends GenericActionNode {
 
 
         StringBuilder ret = new StringBuilder();
-        ret.append("<action name=\"" + getName() + "\">\n" +
+       /* ret.append("<action name=\"" + getName() + "\">\n" +
                 "        <hive2 xmlns=\"uri:oozie:hive2-action:0.1\" cred=\"hs2-creds\">\n" +
                 "            <job-tracker>${jobTracker}</job-tracker>\n" +
                 "            <name-node>${nameNode}</name-node>\n" +
@@ -89,7 +89,23 @@ public class BaseLoadActionNode extends GenericActionNode {
                 "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
                 "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
                 "    </action>");
-
+*/
+        ret.append("\n<action name=\"" + getName() + "\">\n" +
+                "        <shell xmlns=\"uri:oozie:shell-action:0.1\">\n" +
+                "            <job-tracker>${jobTracker}</job-tracker>\n" +
+                "            <name-node>${nameNode}</name-node>\n"+
+                "            <exec>base-load-executor.sh</exec>\n"+
+                "            <argument>base-load.hql</argument>\n"+
+                "            <argument>baseDb="+baseDb+"</argument>\n"+
+                "            <argument>baseTable="+baseTable+"</argument>\n"+
+                "            <argument>instanceExecId=${wf:actionData(\"init-job\")[\"instance-exec-id\"]}</argument>\n" +
+                "            <file>base-load.hql</file>\n"+
+                "            <file>base-load-executor.sh</file>\n"+
+                "            <file>env.sh</file>\n"+
+                "        </shell>\n" +
+                "        <ok to=\"" + getToNode().getName() + "\"/>\n" +
+                "        <error to=\"" + getTermNode().getName() + "\"/>\n" +
+                "    </action>");
         return ret.toString();
     }
 }
