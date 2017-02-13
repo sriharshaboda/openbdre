@@ -66,8 +66,16 @@ public class UserRoleFetcher extends MetadataAPIBase {
         } catch (BDREException e) {
                 throw new BDREException(e);
         }
-        if (users != null)
-            LOGGER.info("user:" + users.getUsername());
+        if (users != null){
+            LOGGER.info("user from DB:" + users.getUsername());
+        }
+
+        else if (users==null){
+            users = new Users();
+            users.setUsername(username);
+            users.setEnabled(((short) 1));
+            LOGGER.info("user from AD:" + users.getUsername());
+        }
         return users;
     }
 
@@ -98,8 +106,17 @@ public class UserRoleFetcher extends MetadataAPIBase {
         } catch (BDREException e) {
             throw new BDREException(e);
         }
-        if (userRoleList != null) {
+        if (userRoleList.size()>0) {
             LOGGER.info("user role list size:" + userRoleList.size());
+        }
+        else if(userRoleList.size()==0){
+            /*UserRoles userRole = new UserRoles();
+            userRole.setUsername(username);
+            userRole.setRole("ROLE_ADMIN");
+            LOGGER.info("role is " + userRole.getRole());
+            userRoleList.add(userRole);*/
+
+
         }
         return userRoleList;
     }

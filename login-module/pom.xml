@@ -26,6 +26,11 @@
     <artifactId>login-module</artifactId>
     <dependencies>
         <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>md_api</artifactId>
             <version>${project.version}</version>
