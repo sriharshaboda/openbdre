@@ -6,6 +6,9 @@ package com.wipro.ats.bdre.jaas.login;
 
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.wipro.ats.bdre.md.api.GetGeneralConfig;
+import com.wipro.ats.bdre.md.beans.table.GeneralConfig;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,8 +22,11 @@ import javax.naming.ServiceUnavailableException;
 
 public class AzureADRealm {
 
-    private final static String AUTHORITY = "https://login.windows.net/ddpus2.onmicrosoft.com";
-    private final static String CLIENT_ID = "22e72fdb-ff50-4b80-98c4-85328a3f2d70";
+    GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
+    GeneralConfig generalConfigClientId = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "clientId");
+    GeneralConfig generalConfigTenant = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "tenant");
+    private final String AUTHORITY = "https://login.windows.net/"+generalConfigTenant.getDefaultVal();
+    private final String CLIENT_ID = generalConfigClientId.getDefaultVal();
     private final static String TOKEN_URL = "https://graph.windows.net";
 
     private final static Logger logger = Logger.getLogger(AzureADRealm.class.getName());
@@ -41,7 +47,7 @@ public class AzureADRealm {
 
     }
 
-    protected static AuthenticationResult getAccessTokenFromUserCredentials(String username, String password) throws Exception {
+    protected AuthenticationResult getAccessTokenFromUserCredentials(String username, String password) throws Exception {
 
 
         AuthenticationContext context = null;

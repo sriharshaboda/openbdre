@@ -34,11 +34,10 @@ public class GetGeneralConfigTest {
             LOGGER.debug("I got the list value  is " + generalConfig);
         }
     }
-    @Ignore
     @Test
     public void testByConigGroupAndKey() throws Exception {
         GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
-        GeneralConfig generalConfig = getGeneralConfig.byConigGroupAndKey("abc", "def");
+        GeneralConfig generalConfig = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "clientId");
         LOGGER.debug("I got the property value  is " + generalConfig);
     }
 }

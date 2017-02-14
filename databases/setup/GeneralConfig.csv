@@ -575,4 +575,9 @@
 'cluster.nn-address', 'Local cluster - Namenode Address', 'Namenode Address','Local cluster' , 1, 'hdfs://${name_node_hostname}:${name_node_port}', 'text' , 1
 'cluster.jt-address', 'Local cluster - Job Tracker Address', 'Job Tracker Address','Local cluster' , 1, '${job_tracker_hostname}:${job_tracker_port}', 'text' , 1
 'cluster.hive-address', 'Local cluster - Hive Server2 Address', 'Hive Server2 Address','Local cluster' , 1, '${hive_server_hostname}:10000', 'text' , 1
-
+'azure-active-directory','group-viewers','ROLE_READONLY','AD group for Viewers',1,'96ed1673-930e-4837-927b-0a394a4fb297','text',1
+'azure-active-directory','group-developers','ROLE_USER','AD group for Developers',1,'033a67f4-f80e-47b4-8474-f993d358ec3d','text',1
+'azure-active-directory','group-coadmins','ROLE_COADMIN','AD group for Co-Admins',1,'f3deff5a-ed45-4225-9a89-49efc7ec23f7','text',1
+'azure-active-directory','group-admins','ROLE_ADMIN','AD group for Admins',1,'8a56e745-9c63-4356-a91b-9f3ffef7ac18','text',1
+'azure-active-directory','tenant','Tenant of AD','Tenant of AD',1,'ddpus2.onmicrosoft.com','text',1
+'azure-active-directory','clientId','Client ID','Azure App or Client ID',1,'22e72fdb-ff50-4b80-98c4-85328a3f2d70','text',1

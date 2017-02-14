@@ -18,6 +18,7 @@ import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.wipro.ats.bdre.md.api.GetGeneralConfig;
 import com.wipro.ats.bdre.md.api.GetUserRoles;
 import com.wipro.ats.bdre.md.api.GetUsers;
+import com.wipro.ats.bdre.md.beans.table.GeneralConfig;
 import org.apache.log4j.Logger;
 
 import javax.security.auth.Subject;
@@ -54,7 +55,9 @@ public class ADJAASLoginModule implements LoginModule {
     private boolean succeeded = false;
     private boolean commitSucceeded = false;
     private String accessToken = new String();
-    private String ADTenant = "ddpus2.onmicrosoft.com";
+    GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
+    GeneralConfig generalConfigTenant = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "tenant");
+    private String ADTenant = generalConfigTenant.getDefaultVal();
     //user credentials
     private String username = null;
     private String password = null;
@@ -194,7 +197,8 @@ public class ADJAASLoginModule implements LoginModule {
         LOGGER.info("Checking user validity");
         AuthenticationResult aResult = null;
         try {
-            aResult = AzureADRealm.getAccessTokenFromUserCredentials(username, password.toString());
+            AzureADRealm azureADRealm = new AzureADRealm();
+            aResult = azureADRealm.getAccessTokenFromUserCredentials(username, password.toString());
             accessToken = aResult.getAccessToken();
             LOGGER.info("Access Token - {0}"+ aResult.getAccessToken());
             LOGGER.info( "Refresh Token - {0}"+ aResult.getRefreshToken());
@@ -220,10 +224,17 @@ public class ADJAASLoginModule implements LoginModule {
         try{
         String memberId = getMemberId(accessToken, ADTenant);
         Map<String,String> groupIDsFromGeneralConfig = new HashMap<>();
-            groupIDsFromGeneralConfig.put("8a56e745-9c63-4356-a91b-9f3ffef7ac18","ROLE_ADMIN");
-            groupIDsFromGeneralConfig.put("f3deff5a-ed45-4225-9a89-49efc7ec23f7","ROLE_COADMIN");
-            groupIDsFromGeneralConfig.put("033a67f4-f80e-47b4-8474-f993d358ec3d","ROLE_USER");
-            groupIDsFromGeneralConfig.put("96ed1673-930e-4837-927b-0a394a4fb297","ROLE_READONLY");
+
+            GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
+            GeneralConfig generalConfigViewers = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "group-viewers");
+            GeneralConfig generalConfigDevs = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "group-developers");
+            GeneralConfig generalConfigCoAdmins = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "group-coadmins");
+            GeneralConfig generalConfigAdmins = getGeneralConfig.byConigGroupAndKey("azure-active-directory", "group-admins");
+
+            groupIDsFromGeneralConfig.put(generalConfigViewers.getDefaultVal(),generalConfigViewers.getValue());
+            groupIDsFromGeneralConfig.put(generalConfigDevs.getDefaultVal(),generalConfigDevs.getValue());
+            groupIDsFromGeneralConfig.put(generalConfigCoAdmins.getDefaultVal(),generalConfigCoAdmins.getValue());
+            groupIDsFromGeneralConfig.put(generalConfigAdmins.getDefaultVal(),generalConfigAdmins.getValue());
 
             for(String groupID:groupIDsFromGeneralConfig.keySet()){
                 if(isMemberOfGroup(accessToken,ADTenant,memberId,groupID)){
