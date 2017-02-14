@@ -17,6 +17,8 @@ package com.wipro.ats.bdre.md.api;
 import com.wipro.ats.bdre.md.api.base.MetadataAPIBase;
 import com.wipro.ats.bdre.md.beans.table.GeneralConfig;
 import com.wipro.ats.bdre.md.dao.GeneralConfigDAO;
+import com.wipro.ats.bdre.md.dao.jpa.GeneralConfigId;
+import org.apache.commons.collections.comparators.BooleanComparator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -115,6 +117,38 @@ public class GetGeneralConfig extends MetadataAPIBase {
         return generalConfig;
     }
 
+    public void insertGenConfig(String configGroup, String key, String defaultValue, String desc, Boolean enabled, String gcValue, String type, Boolean required) {
+        LOGGER.info("inside insert general config");
+        try {
+            com.wipro.ats.bdre.md.dao.jpa.GeneralConfig jpaGeneralConfig = new com.wipro.ats.bdre.md.dao.jpa.GeneralConfig();
+            GeneralConfigId jpaGeneralConfigId = new GeneralConfigId();
+            jpaGeneralConfigId.setConfigGroup(configGroup);
+            jpaGeneralConfigId.setGcKey(key);
+            jpaGeneralConfig.setDefaultVal(defaultValue);
+            jpaGeneralConfig.setDescription(desc);
+            jpaGeneralConfig.setEnabled(enabled);
+            jpaGeneralConfig.setGcValue(gcValue);
+            jpaGeneralConfig.setType(type);
+            jpaGeneralConfig.setRequired(required);
+            jpaGeneralConfig.setId(jpaGeneralConfigId);
+            GeneralConfigId generalConfigId= generalConfigDAO.insert(jpaGeneralConfig);
+            LOGGER.info("GC inserted config group= "+generalConfigId.getConfigGroup()+ " key ="+ generalConfigId.getGcKey());
+        } catch(Exception ex){
+            LOGGER.error("Error occured while inserting into GC "+ ex);
+        }
+    }
+
+    public void deleteGenConfig(String configGroup, String key){
+        try {
+            GeneralConfig gc = byConigGroupAndKey(configGroup, key);
+            GeneralConfigId jpaGeneralConfigId = new GeneralConfigId();
+            jpaGeneralConfigId.setConfigGroup(configGroup);
+            jpaGeneralConfigId.setGcKey(key);
+            generalConfigDAO.delete(jpaGeneralConfigId);
+        } catch(Exception ex){
+            LOGGER.error("No object found to delete");
+        }
+    }
     @Override
     public Object execute(String[] params) {
         return null;

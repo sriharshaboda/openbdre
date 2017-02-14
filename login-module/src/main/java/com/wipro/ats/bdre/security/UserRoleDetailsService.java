@@ -14,8 +14,11 @@
 
 package com.wipro.ats.bdre.security;
 
+import com.wipro.ats.bdre.md.api.GetGeneralConfig;
+import com.wipro.ats.bdre.md.beans.table.GeneralConfig;
 import com.wipro.ats.bdre.md.beans.table.UserRoles;
 import com.wipro.ats.bdre.md.beans.table.Users;
+import org.apache.log4j.Logger;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.User;
@@ -30,6 +33,7 @@ import java.util.List;
  * Created by AR288503 on 9/5/2015.
  */
 public class UserRoleDetailsService implements UserDetailsService {
+    private static final Logger LOGGER = Logger.getLogger(UserRoleDetailsService.class);
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
@@ -40,6 +44,7 @@ public class UserRoleDetailsService implements UserDetailsService {
             grantedAuthorities.add(new GrantedAuthorityImpl(role.getRole()));
         }
         UserDetails user = new User(users.getUsername(), "na", true, true, true, true, grantedAuthorities);
+
         return user;
     }
 }

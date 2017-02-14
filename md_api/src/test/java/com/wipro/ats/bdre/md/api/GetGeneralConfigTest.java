@@ -34,12 +34,11 @@ public class GetGeneralConfigTest {
             LOGGER.debug("I got the list value  is " + generalConfig);
         }
     }
-
     @Ignore
     @Test
     public void testByConigGroupAndKey() throws Exception {
         GetGeneralConfig getGeneralConfig = new GetGeneralConfig();
-        GeneralConfig generalConfig = getGeneralConfig.byConigGroupAndKey("1", "credential");
+        GeneralConfig generalConfig = getGeneralConfig.byConigGroupAndKey("abc", "def");
         LOGGER.debug("I got the property value  is " + generalConfig);
     }
 }

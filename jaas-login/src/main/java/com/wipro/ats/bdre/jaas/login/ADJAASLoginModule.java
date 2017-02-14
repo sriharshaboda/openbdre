@@ -15,6 +15,9 @@
 package com.wipro.ats.bdre.jaas.login;
 
 import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.wipro.ats.bdre.md.api.GetGeneralConfig;
+import com.wipro.ats.bdre.md.api.GetUserRoles;
+import com.wipro.ats.bdre.md.api.GetUsers;
 import org.apache.log4j.Logger;
 
 import javax.security.auth.Subject;
@@ -51,7 +54,7 @@ public class ADJAASLoginModule implements LoginModule {
     private boolean succeeded = false;
     private boolean commitSucceeded = false;
     private String accessToken = new String();
-    private String ADTenant = new String();
+    private String ADTenant = "ddpus2.onmicrosoft.com";
     //user credentials
     private String username = null;
     private String password = null;
@@ -62,7 +65,7 @@ public class ADJAASLoginModule implements LoginModule {
 
     public ADJAASLoginModule() {
         super();
-        LOGGER.debug("Login module constructor call");
+        LOGGER.info("Login module constructor call");
 
     }
 
@@ -75,7 +78,7 @@ public class ADJAASLoginModule implements LoginModule {
         this.options = options;
         env = (String) options.get("env");
 
-        LOGGER.debug("Login module constructor call. env=" + env);
+        LOGGER.info("Login module constructor call. env=" + env);
     }
 
     @Override
@@ -124,24 +127,27 @@ public class ADJAASLoginModule implements LoginModule {
             userPrincipal = new JAASUserPrincipal(username);
             if (!subject.getPrincipals().contains(userPrincipal)) {
                 subject.getPrincipals().add(userPrincipal);
-                LOGGER.debug("User principal added:" + userPrincipal);
+                LOGGER.info("User principal added:" + userPrincipal);
             }
             passwordPrincipal = new JAASPasswordPrincipal(password);
             if (!subject.getPrincipals().contains(passwordPrincipal)) {
                 subject.getPrincipals().add(passwordPrincipal);
-                LOGGER.debug("Password principal added: " + passwordPrincipal);
+                LOGGER.info("Password principal added: " + passwordPrincipal);
             }
 
             //populate subject with roles.
             List<String> roles = getRoles(accessToken);
+            LOGGER.info("number of roles fetched ="+roles.size()+ " first role ="+roles.get(0));
             for (String role : roles) {
                 JAASRolePrincipal rolePrincipal = new JAASRolePrincipal(role);
                 if (!subject.getPrincipals().contains(rolePrincipal)) {
+                    LOGGER.info("role to be added in gc = "+role+" username = "+username);
+                    GetUserRoles getUserRoles = new GetUserRoles();
+                    getUserRoles.insertOrUpdateUserDetails(username,"",true,role);
                     subject.getPrincipals().add(rolePrincipal);
-                    LOGGER.debug("Role principal added: " + rolePrincipal);
+                    LOGGER.info("Role principal added: " + rolePrincipal);
                 }
             }
-
             commitSucceeded = true;
 
             LOGGER.info("Login subject were successfully populated with principals and roles");
@@ -185,7 +191,7 @@ public class ADJAASLoginModule implements LoginModule {
 
     private boolean isValidUser() throws LoginException {
         boolean result=false;
-        LOGGER.debug("Checking user validity");
+        LOGGER.info("Checking user validity");
         AuthenticationResult aResult = null;
         try {
             aResult = AzureADRealm.getAccessTokenFromUserCredentials(username, password.toString());
