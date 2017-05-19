@@ -38,3 +38,8 @@
 38,'Analytics UI Action ',37
 39,'SuperWorkflow',null
 40,'SubWorkflow',39
+41,'Streaming Job',null
+42,'source_Kafka',41
+43,'operator_Count',41
+44,'destination_HDFS',41
+

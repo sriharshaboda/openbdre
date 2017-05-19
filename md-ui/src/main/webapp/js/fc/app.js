@@ -48,6 +48,9 @@ angular.module('app', ['flowChart', ])
         var chartDataModel = {};
 
         $scope.processTypes={};
+        $scope.source_processTypes={};
+        $scope.operator_processTypes={};
+        $scope.destination_processTypes={};
         $scope.chartViewModel={};
         //
         // Event handler for key-down on the flowchart.
@@ -114,8 +117,11 @@ angular.module('app', ['flowChart', ])
                 alertBox('danger', 'Error Initialising Process Page');
             }
 
-
+            jQuery.post('/mdrest/processtype/options_destination/'+parentType,function(data){$scope.destination_processTypes=data});
             jQuery.post('/mdrest/processtype/options/'+parentType,function(data){$scope.processTypes=data});
+            jQuery.post('/mdrest/processtype/options_source/'+parentType,function(data){$scope.source_processTypes=data});
+            jQuery.post('/mdrest/processtype/options_operator/'+parentType,function(data){$scope.operator_processTypes=data});
+
 
             //
             // Setup the data-model for the chart.
@@ -254,6 +260,28 @@ angular.module('app', ['flowChart', ])
                 return;
             }
 
+            var nodename;
+              if(nodeTypeId==42)
+                   nodename='Kafka';
+               if(nodeTypeId==43)
+                  nodename='count';
+              if(nodeTypeId==44)
+                nodename='HDFS';
+                console.log("node name is "+nodename);
+
+            if(parentPid==41)
+            {
+            //
+                        //create new process
+                        var postData = '&processName=' +
+                                nodename + '&description=A+Child+of+' +
+                                parentPid + '&batchPattern=&parentProcessId=' +
+                                parentPid + '&canRecover=1&nextProcessIds=0&enqProcessId=0&busDomainId=' +
+                                busDomainId + '&processTypeId=' +
+                                nodeTypeId + '&workflowId=0&processTemplateId=';
+            }
+           else
+           {
             //
             //create new process
             var postData = '&processName=Child+of+' +
@@ -262,13 +290,14 @@ angular.module('app', ['flowChart', ])
                     parentPid + '&canRecover=1&nextProcessIds=0&enqProcessId=0&busDomainId=' +
                     busDomainId + '&processTypeId=' +
                     nodeTypeId + '&workflowId=0&processTemplateId=';
-
+               }
             var subprocessRecord = subprocessAC('/mdrest/subprocess', 'PUT', postData);
 
 
             if (subprocessRecord) {
 
            // Template for a new node.
+
               var newNodeDataModel = {
                   name: subprocessRecord.processName,
                   id: subprocessRecord.processId,
