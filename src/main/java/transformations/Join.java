@@ -15,7 +15,7 @@ public class Join implements Transformation {
         Integer prevPid2 = prevMap.get(pid).get(1);
         DataFrame prevDF1 = prevDataFrameMap.get(prevPid1);
         DataFrame prevDF2 = prevDataFrameMap.get(prevPid2);
-        DataFrame joinedDF = prevDF1.join(prevDF2);
+        DataFrame joinedDF = prevDF1.unionAll(prevDF2);
         return joinedDF;
     }
 }

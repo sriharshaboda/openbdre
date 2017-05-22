@@ -1,4 +1,5 @@
 import datasources.KafkaSource;
+import emitters.HDFSEmitter;
 import kafka.serializer.StringDecoder;
 import messageformat.ApacheLogRegexParser;
 import messageschema.SchemaReader;
@@ -74,14 +75,23 @@ public class Test {
         for(Integer sourcePid:listOfSourcePids){
             prevMap.put(sourcePid,null);
         }
+        // Create a Spark Context.
+        SparkConf conf = new SparkConf().setAppName("Log Analyzer");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+        //TODO: Fetch batchDuration property from database
+        long batchDuration = 10000;
+        JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
+
         //iterate till the list contains only one element and the element must be the parent pid indicating we have reached the end of pipeline
         while (currentUpstreamList.size()!=1  || !currentUpstreamList.contains(parentProcessId)) {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
             Test test = new Test();
             System.out.println("prevMap = " + prevMap);
-            test.createDataFrames(currentUpstreamList,prevMap);
+            test.createDataFrames(ssc,currentUpstreamList,prevMap);
             test.identifyFlows(currentUpstreamList, nextPidMap);
         }
+        ssc.start();
+        ssc.awaitTermination();
     }
 
         public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer,String> nextPidMap){
@@ -120,13 +130,7 @@ public class Test {
         }
 
             //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
-        public void createDataFrames(List<Integer> currentUpstreamList,Map<Integer,List<Integer>> prevMap){
-            // Create a Spark Context.
-            SparkConf conf = new SparkConf().setAppName("Log Analyzer");
-            JavaSparkContext sc = new JavaSparkContext(conf);
-            //TODO: Fetch batchDuration property from database
-            long batchDuration = 10000;
-            JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
+        public void createDataFrames(JavaStreamingContext ssc, List<Integer> currentUpstreamList,Map<Integer,List<Integer>> prevMap){
 
             //iterate through each upstream and create respective dataframes based on prev value if prevMap
             for(Integer pid:currentUpstreamList){
@@ -209,9 +213,19 @@ public class Test {
                 }
                 else if(listOfEmitters.contains(pid)){
                     //found emitter node, so get upstream pid and persist based on emitter
-
+                    List<Integer> prevPids = prevMap.get(pid);
+                    for(Integer prevPid: prevPids){
+                        DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
+                        String emitterType = "HDFSEmitter";
+                        if(emitterType.equals("HDFSEmitter")){
+                            HDFSEmitter hdfsEmitter = new HDFSEmitter();
+                            hdfsEmitter.persist(prevDataFrame,pid);
+                        }
+                        //TODO: Handle logic for other emitters
+                    }
                 }
             }
+
         }
 
     }
