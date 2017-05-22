@@ -1070,38 +1070,38 @@ wizard = $(document).ready(function() {
         		    },
         			   	updateAction: function(postData) {
                         console.log(postData);
-                                                                                var baseUpdateSplitedPostData = postData.split("&");
-                                                                                var baseUpdateJSONedPostData = '{';
-                                                                                for (i=0; i < baseUpdateSplitedPostData.length ; i++)
-                                                                                {
-                                                                                    console.log("data is " + baseUpdateSplitedPostData[i]);
-                                                                                    baseUpdateJSONedPostData += '"';
-                                                                                    baseUpdateJSONedPostData += baseUpdateSplitedPostData[i].split("=")[0];
-                                                                                    baseUpdateJSONedPostData += '"';
-                                                                                    baseUpdateJSONedPostData += ":";
-                                                                                    baseUpdateJSONedPostData += '"';
-                                                                                    baseUpdateJSONedPostData += baseUpdateSplitedPostData[i].split("=")[1];
-                                                                                    baseUpdateJSONedPostData += '"';
-                                                                                    baseUpdateJSONedPostData += ',';
-                                                                                    console.log("json is" + baseUpdateJSONedPostData);
-                                                                                }
-                                                                                if (baseUpdateJSONedPostData.indexOf("transformation") == -1){
-                                                                                    baseUpdateJSONedPostData +=  '"transformations":"'+'no transformation'+'"}';
-                                                                                }else{
-                                                                                    var baseUpdateLastIndex = baseUpdateJSONedPostData.lastIndexOf(",");
-                                                                                    baseUpdateJSONedPostData = baseUpdateJSONedPostData.substring(0,baseUpdateLastIndex);
-                                                                                    baseUpdateJSONedPostData +=  "}";
-                                                                                }
-                                                                                console.log(baseUpdateJSONedPostData);
+                        var baseUpdateSplitedPostData = postData.split("&");
+                        var baseUpdateJSONedPostData = '{';
+                        for (i=0; i < baseUpdateSplitedPostData.length ; i++)
+                        {
+                            console.log("data is " + baseUpdateSplitedPostData[i]);
+                            baseUpdateJSONedPostData += '"';
+                            baseUpdateJSONedPostData += baseUpdateSplitedPostData[i].split("=")[0];
+                            baseUpdateJSONedPostData += '"';
+                            baseUpdateJSONedPostData += ":";
+                            baseUpdateJSONedPostData += '"';
+                            baseUpdateJSONedPostData += baseUpdateSplitedPostData[i].split("=")[1];
+                            baseUpdateJSONedPostData += '"';
+                            baseUpdateJSONedPostData += ',';
+                            console.log("json is" + baseUpdateJSONedPostData);
+                        }
+                        if (baseUpdateJSONedPostData.indexOf("transformation") == -1){
+                            baseUpdateJSONedPostData +=  '"transformations":"'+'no transformation'+'"}';
+                        }else{
+                            var baseUpdateLastIndex = baseUpdateJSONedPostData.lastIndexOf(",");
+                            baseUpdateJSONedPostData = baseUpdateJSONedPostData.substring(0,baseUpdateLastIndex);
+                            baseUpdateJSONedPostData +=  "}";
+                        }
+                        console.log(baseUpdateJSONedPostData);
 
 
-                                                                               var baseUpdateReturnObj='{"Result":"OK","Record":' + baseUpdateJSONedPostData + '}';
-                                                                               var baseupdateJSONedReturn = $.parseJSON(baseUpdateReturnObj);
+                       var baseUpdateReturnObj='{"Result":"OK","Record":' + baseUpdateJSONedPostData + '}';
+                       var baseupdateJSONedReturn = $.parseJSON(baseUpdateReturnObj);
 
-                                                                           return $.Deferred(function($dfd) {
-                                                                           					console.log(baseUpdateReturnObj);
-                                                                           					$dfd.resolve(baseupdateJSONedReturn);
-                                                                           				});
+                   return $.Deferred(function($dfd) {
+                                    console.log(baseUpdateReturnObj);
+                                    $dfd.resolve(baseupdateJSONedReturn);
+                                });
 
                         },
                         deleteAction: function() {
