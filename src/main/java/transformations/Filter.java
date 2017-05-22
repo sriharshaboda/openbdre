@@ -14,7 +14,9 @@ public class Filter implements Transformation {
         //TODO: fetch the filter logic from DB
         Integer prevPid = prevMap.get(pid).get(0);
         DataFrame prevDataFrame = prevDataFrameMap.get(prevPid);
-        DataFrame filteredDF = prevDataFrame.filter(prevDataFrame.col("responseCode").gt("200"));
+        DataFrame filteredDF =null;
+        if(prevDataFrame!=null)
+                 filteredDF = prevDataFrame.filter(prevDataFrame.col("responseCode").gt("200"));
         return filteredDF;
     }
 }

@@ -13,9 +13,16 @@ public class Join implements Transformation {
     public DataFrame transform(Map<Integer,DataFrame> prevDataFrameMap, Map<Integer,List<Integer>> prevMap, Integer pid){
         Integer prevPid1 = prevMap.get(pid).get(0);
         Integer prevPid2 = prevMap.get(pid).get(1);
+        System.out.println("prevPid1 = " + prevPid1);
+        System.out.println("prevPid2 = " + prevPid2);
         DataFrame prevDF1 = prevDataFrameMap.get(prevPid1);
         DataFrame prevDF2 = prevDataFrameMap.get(prevPid2);
-        DataFrame joinedDF = prevDF1.unionAll(prevDF2);
+        DataFrame joinedDF = null;
+        if(prevDF1!=null & prevDF2!=null)
+        {
+         joinedDF = prevDF1.join(prevDF2);
+        }
+
         return joinedDF;
     }
 }

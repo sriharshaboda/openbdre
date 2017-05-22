@@ -130,24 +130,22 @@ public class StreamAnalyticsDriver {
 
     //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
     public void createDataFrames(JavaStreamingContext ssc, List<Integer> currentUpstreamList, Map<Integer, List<Integer>> prevMap) {
-
+        System.out.println("prevMap = " + prevMap);
         //iterate through each upstream and create respective dataframes based on prev value if prevMap
         for (Integer pid : currentUpstreamList) {
+            System.out.println("pid = " + pid);
             if (listOfSourcePids.contains(pid)) {
+                System.out.println("after printing pid inside loop= " + pid);
                 //Found Source node, need to create DStream and cast to Dataframe
                 //Fetch Source Stream Type & Source Message Type from DB
                 String sourceType = "Kafka";
-                String messageType = "ApacheLog";
+
                 if (sourceType.equals("Kafka")) {
+                    System.out.println("inside source  = " + sourceType);
                     Map<String, String> kafkaParams = KafkaSource.getKafkaParams(pid);
                     Set<String> topics = KafkaSource.getTopics(pid);
                     JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
-                    JavaDStream<String> msgDataStream = directKafkaStream.map(new Function<Tuple2<String, String>, String>() {
-                        @Override
-                        public String call(Tuple2<String, String> tuple2) {
-                            return tuple2._2();
-                        }
-                    });
+                    JavaDStream<String> msgDataStream = directKafkaStream.map(mapFunc);
                     msgDataStream.foreachRDD(
                             new Function2<JavaRDD<String>, Time, Void>() {
                                 @Override
@@ -161,17 +159,21 @@ public class StreamAnalyticsDriver {
                                         public Row call(String record) {
                                             Object[] attributes = new Object[]{};
                                             //TODO: Add logic to handle other message types like delimited, etc..
+                                            String messageType = "ApacheLog";
                                             if (messageType.equals("ApacheLog")) {
                                                 attributes = new ApacheLogRegexParser().parseRecord(record);
+                                                System.out.println("attributes = " + attributes);
                                             }
                                             return RowFactory.create(attributes);
                                         }
                                     });
                                     SchemaReader schemaReader = new SchemaReader();
                                     StructType schema = schemaReader.generateSchema(pid);
-                                    DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema).cache();
+                                    System.out.println("schema = " + schema);
+                                    DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
                                     dataFrame.show();
                                     pidDataFrameMap.put(pid, dataFrame);
+                                    System.out.println("pidDataFrameMap = " + pidDataFrameMap);
                                     return null;
                                 }
                             });
@@ -223,5 +225,12 @@ public class StreamAnalyticsDriver {
         }
 
     }
+    static Function<Tuple2<String, String>, String> mapFunc=new Function<Tuple2<String, String>, String>() {
+        @Override
+        public String call(Tuple2<String, String> tuple2) {
+            return tuple2._2();
+        }
+    };
 
 }
+

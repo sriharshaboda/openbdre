@@ -11,6 +11,7 @@ public class HDFSEmitter {
 
     public void persist(DataFrame df, Integer pid){
         long date = new Date().getTime();
+        if(df!=null)
         df.rdd().saveAsTextFile("/user/cloudera/spark-streaming-data/"+ date+"/");
     }
 }
