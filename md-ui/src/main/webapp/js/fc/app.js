@@ -267,9 +267,9 @@ angular.module('app', ['flowChart', ])
                   nodename='count';
               if(nodeTypeId==44)
                 nodename='HDFS';
-                console.log("node name is "+nodename);
+                console.log("node name is "+nodename+" parentPid is "+parentPid);
 
-            if(parentPid==41)
+            if(parentType==41)
             {
             //
                         //create new process
@@ -386,6 +386,17 @@ $scope.updateProcessDetails = function() {
 //
 // On clicking Name Descirption update button
 //
+
+$scope.insertKafkaProp=function(processId,property1,property2,property3,property4){
+
+console.log("processId is "+processId);
+console.log("property1 is "+property1);
+console.log("property2 is "+property2);
+console.log("property3 is "+property3);
+console.log("property4 is "+property4);
+
+
+}
 
 $scope.insertProp = function(cfgDetails) {
     var cfg = cfgDetails.key,
