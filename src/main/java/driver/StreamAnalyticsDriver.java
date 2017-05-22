@@ -48,9 +48,19 @@ public class StreamAnalyticsDriver {
         //parent-process-id
         String pid = "151";
         int[] listOfSourcePids = {152,153};
-
-        int[] listOfTransformations = {5, 6};
-        int[] listOfEmitters = {7};
+        int[] listOfTransformations = {154,155,156,157};
+        int[] listOfEmitters = {158,159};
+        Map<Integer,String> nextPidMap = new HashMap<Integer,String>();
+        nextPidMap.put(151,"152,153");
+        nextPidMap.put(152,"154");
+        nextPidMap.put(153,"154,155");
+        nextPidMap.put(154,"157");
+        nextPidMap.put(155,"156");
+        nextPidMap.put(156,"158,159");
+        nextPidMap.put(157,"158");
+        nextPidMap.put(151,"152,153");
+        nextPidMap.put(158,"151");
+        nextPidMap.put(159,"151");
 
         // Create a Spark Context.
         SparkConf conf = new SparkConf().setAppName("Log Analyzer");
@@ -95,7 +105,7 @@ public class StreamAnalyticsDriver {
                                 DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema).cache();
                                 //dataFrame.show();
                                 Filter filter = new Filter();
-                                filter.transform(dataFrame).show();
+                                //filter.transform(dataFrame).show();
                                 sourceDFrameMap.put(sourcePid, dataFrame);
                                 return null;
                             }
