@@ -11,7 +11,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.Function3;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
@@ -34,15 +33,16 @@ import java.util.*;
 /**
  * Created by cloudera on 5/18/17.
  */
-public class StreamAnalyticsDriver implements Serializable{
+public class StreamAnalyticsDriver implements Serializable {
 
-    public static Map<Integer, List<Integer>> prevMap = new HashMap<>();
+    public static Map<Integer, Set<Integer>> prevMap = new HashMap<>();
     public static Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
     public static List<Integer> listOfSourcePids = new ArrayList<>();
     public static List<Integer> listOfTransformations = new ArrayList<>();
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
     public static Integer parentProcessId = new Integer(151);
+
     public static void main(String[] args) {
         //Integer parentProcessId = Integer.parseInt(args[0]);
         parentProcessId = 151;
@@ -85,11 +85,11 @@ public class StreamAnalyticsDriver implements Serializable{
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
 
         //iterate till the list contains only one element and the element must be the parent pid indicating we have reached the end of pipeline
-        while (currentUpstreamList.size() != 1 || !currentUpstreamList.contains(parentProcessId)) {
+        while (!currentUpstreamList.isEmpty()) {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
             StreamAnalyticsDriver streamAnalyticsDriver = new StreamAnalyticsDriver();
             System.out.println("prevMap = " + prevMap);
-            streamAnalyticsDriver.createDataFrames(ssc, currentUpstreamList, prevMap,nextPidMap);
+            streamAnalyticsDriver.createDataFrames(ssc, currentUpstreamList, prevMap, nextPidMap);
             streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap);
         }
         ssc.start();
@@ -98,7 +98,7 @@ public class StreamAnalyticsDriver implements Serializable{
 
     public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer, String> nextPidMap) {
         //prevMapTemp holds the prev ids only for pids involved in current iteration
-        Map<Integer, List<Integer>> prevMapTemp = new HashMap<>();
+        Map<Integer, Set<Integer>> prevMapTemp = new HashMap<>();
         for (Integer currentPid : currentUpstreamList) {
 
             String nextPidString = nextPidMap.get(currentPid);
@@ -118,21 +118,24 @@ public class StreamAnalyticsDriver implements Serializable{
 
         //update the currentUpstreamList with the keys of the prevMap i.e all unique next ids of current step will be upstreams of following iteration
         currentUpstreamList.clear();
+        //if the set contains parentProcessId, remove it
+        if (prevMapTemp.containsKey(parentProcessId))
+            prevMapTemp.remove(parentProcessId);
         currentUpstreamList.addAll(prevMapTemp.keySet());
     }
 
     //method to add previous pids as values to list against given process-id as key
-    public void add(Integer key, Integer newValue, Map<Integer, List<Integer>> prevMap) {
-        List<Integer> currentValue = prevMap.get(key);
+    public void add(Integer key, Integer newValue, Map<Integer, Set<Integer>> prevMap) {
+        Set<Integer> currentValue = prevMap.get(key);
         if (currentValue == null) {
-            currentValue = new ArrayList<>();
+            currentValue = new HashSet<>();
             prevMap.put(key, currentValue);
         }
         currentValue.add(newValue);
     }
 
     //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
-    public void createDataFrames(JavaStreamingContext ssc, List<Integer> currentUpstreamList, Map<Integer, List<Integer>> prevMap,Map<Integer, String> nextPidMap) {
+    public void createDataFrames(JavaStreamingContext ssc, List<Integer> currentUpstreamList, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap) {
         System.out.println("prevMap = " + prevMap);
         //iterate through each upstream and create respective dataframes based on prev value if prevMap
         for (Integer pid : currentUpstreamList) {
@@ -167,122 +170,82 @@ public class StreamAnalyticsDriver implements Serializable{
                                     dataFrame.show();
                                     pidDataFrameMap.put(pid, dataFrame);
                                     System.out.println("pidDataFrameMap = " + pidDataFrameMap);
-                                    transformAndEmit(nextPidMap.get(pid),pidDataFrameMap);
+                                    transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
                                     return null;
                                 }
                             });
 
                 }
                 //TODO: Add logic to handle other Source Types
-            } /* if (listOfTransformations.contains(pid)) {
-                //this pid is of type transformation, find prev pids to output the appropriate dataframe
-                List<Integer> prevPids = prevMap.get(pid);
-                if (prevPids.size() > 1) {
-                    //obtain list of corresponding prevDataFrames for all prevPids
-                    DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
-
-                    String transformationType = "join";
-                    if (transformationType.equals("join")) {
-                        Join join = new Join();
-                        for (Integer prevPid : prevPids) {
-                            DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
-
-                        }
-                        DataFrame dataFramePostTransformation = join.transform(pidDataFrameMap, prevMap, pid);
-                        pidDataFrameMap.put(pid, dataFramePostTransformation);
-                    }
-                    //this transformation involves multiple upstream dataframes, e.g: join or union etc.
-                    //find the transformation type and create dataframe accordingly
-                } else {
-                    //this transformation contains only one upstream pid
-                    Integer prevPid = prevMap.get(pid).get(0);
-                    //TODO: Fetch the transformation type from DB
-                    String transformationType = "filter";
-                    if (transformationType.equals("filter")) {
-                        Filter filter = new Filter();
-                        DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);
-                        pidDataFrameMap.put(pid, dataFramePostTransformation);
-                    }
-                }
             }
-            if (listOfEmitters.contains(pid)) {
-                //found emitter node, so get upstream pid and persist based on emitter
-                List<Integer> prevPids = prevMap.get(pid);
-                for (Integer prevPid : prevPids) {
-                    DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
-                    String emitterType = "HDFSEmitter";
-                    if (emitterType.equals("HDFSEmitter")) {
-                        HDFSEmitter hdfsEmitter = new HDFSEmitter();
-                        hdfsEmitter.persist(prevDataFrame, pid);
-                    }
-                    //TODO: Handle logic for other emitters
-                }
-            }*/
         }
 
     }
-    public void transformAndEmit(String nextPidString,Map<Integer,DataFrame> pidDataFrameMap) {
-        if (!nextPidString.equals(nextPidMap.get(parentProcessId))){
+
+    public void transformAndEmit(String nextPidString, Map<Integer, DataFrame> pidDataFrameMap) {
+        if (!nextPidString.equals(nextPidMap.get(parentProcessId))) {
             String[] nextPidStringArray = nextPidString.split(",");
-        Integer[] nextPidInts = new Integer[nextPidStringArray.length];
-        for (int i = 0; i < nextPidStringArray.length; i++) {
-            //cast String to Integer
-            nextPidInts[i] = Integer.parseInt(nextPidStringArray[i]);
-        }
-        for (int i = 0; i < nextPidInts.length; i++) {
-            for (Integer prevPid : prevMap.get(nextPidInts[i])) {
-                if (pidDataFrameMap.get(prevPid) == null)
-                    return;
+            Integer[] nextPidInts = new Integer[nextPidStringArray.length];
+            for (int i = 0; i < nextPidStringArray.length; i++) {
+                //cast String to Integer
+                nextPidInts[i] = Integer.parseInt(nextPidStringArray[i]);
             }
-        }
-        // while()
-        for (Integer pid : nextPidInts) {
-            if (listOfTransformations.contains(pid)) {
-                //this pid is of type transformation, find prev pids to output the appropriate dataframe
-                List<Integer> prevPids = prevMap.get(pid);
-                if (prevPids.size() > 1) {
-                    //obtain list of corresponding prevDataFrames for all prevPids
-                    DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
-
-                    String transformationType = "join";
-                    if (transformationType.equals("join")) {
-                        Join join = new Join();
-                        DataFrame dataFramePostTransformation = join.transform(pidDataFrameMap, prevMap, pid);
-                        pidDataFrameMap.put(pid, dataFramePostTransformation);
-                    }
-                    //this transformation involves multiple upstream dataframes, e.g: join or union etc.
-                    //find the transformation type and create dataframe accordingly
-                } else {
-                    //this transformation contains only one upstream pid
-                    Integer prevPid = prevMap.get(pid).get(0);
-                    //TODO: Fetch the transformation type from DB
-                    String transformationType = "filter";
-                    if (transformationType.equals("filter")) {
-                        Filter filter = new Filter();
-                        DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);
-                        pidDataFrameMap.put(pid, dataFramePostTransformation);
-                    }
+            for (int i = 0; i < nextPidInts.length; i++) {
+                for (Integer prevPid : prevMap.get(nextPidInts[i])) {
+                    if (pidDataFrameMap.get(prevPid) == null)
+                        return;
                 }
             }
-            if (listOfEmitters.contains(pid)) {
-                //found emitter node, so get upstream pid and persist based on emitter
-                List<Integer> prevPids = prevMap.get(pid);
-                for (Integer prevPid : prevPids) {
-                    DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
-                    String emitterType = "HDFSEmitter";
-                    if (emitterType.equals("HDFSEmitter")) {
-                        HDFSEmitter hdfsEmitter = new HDFSEmitter();
-                        hdfsEmitter.persist(prevDataFrame, pid);
+            // while()
+            for (Integer pid : nextPidInts) {
+                if (listOfTransformations.contains(pid)) {
+                    //this pid is of type transformation, find prev pids to output the appropriate dataframe
+                    Set<Integer> prevPids = prevMap.get(pid);
+                    if (prevPids.size() > 1) {
+                        //obtain list of corresponding prevDataFrames for all prevPids
+                        DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
+
+                        String transformationType = "join";
+                        if (transformationType.equals("join")) {
+                            Join join = new Join();
+                            DataFrame dataFramePostTransformation = join.transform(pidDataFrameMap, prevMap, pid);
+                            pidDataFrameMap.put(pid, dataFramePostTransformation);
+                        }
+                        //this transformation involves multiple upstream dataframes, e.g: join or union etc.
+                        //find the transformation type and create dataframe accordingly
+                    } else {
+                        //this transformation contains only one upstream pid
+                        List<Integer> prevPidList = new ArrayList<Integer>();
+                        prevPidList.addAll(prevMap.get(pid));
+                        Integer prevPid = prevPidList.get(0);
+                        //TODO: Fetch the transformation type from DB
+                        String transformationType = "filter";
+                        if (transformationType.equals("filter")) {
+                            Filter filter = new Filter();
+                            DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);
+                            pidDataFrameMap.put(pid, dataFramePostTransformation);
+                        }
                     }
-                    //TODO: Handle logic for other emitters
                 }
+                if (listOfEmitters.contains(pid)) {
+                    //found emitter node, so get upstream pid and persist based on emitter
+                    Set<Integer> prevPids = prevMap.get(pid);
+                    for (Integer prevPid : prevPids) {
+                        DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
+                        String emitterType = "HDFSEmitter";
+                        if (emitterType.equals("HDFSEmitter")) {
+                            HDFSEmitter hdfsEmitter = new HDFSEmitter();
+                            hdfsEmitter.persist(prevDataFrame, pid);
+                        }
+                        //TODO: Handle logic for other emitters
+                    }
+                }
+                transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
             }
-            transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
         }
     }
-    }
 
-    class FlattenKafkaMessage implements Function<Tuple2<String,String>,String>{
+    class FlattenKafkaMessage implements Function<Tuple2<String, String>, String> {
         @Override
         public String call(Tuple2<String, String> tuple2) {
             return tuple2._2();
