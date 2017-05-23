@@ -317,11 +317,16 @@
                                                     url: "wfdesigner.page",
                                                     children: []
 								}, {
-                                                    label: "Process Domains",
+                                                    label: "Create Messages",
                                                     collapse: "1",
-                                                    url: "busdomain.page",
+                                                    url: "streamingmessage.page",
                                                     children: []
-								}, {
+								},{
+                                                 label: "Process Domains",
+                                                  collapse: "1",
+                                                 url: "busdomain.page",
+                                                   children: []
+                                }, {
                                                     label: "Servers",
                                                     collapse: "1",
                                                     url: "servers.page",

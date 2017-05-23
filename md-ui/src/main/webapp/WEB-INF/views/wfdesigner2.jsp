@@ -147,6 +147,9 @@
 
 
 
+
+
+
                         <div class="row" style="background-color: #F8F9FB;padding-top: 2%;border-radius:5px;">
                             <div class="col-md-3 sidebar-nav">
                                 <div class="panel panel-default" ng-if="chartViewModel.selectedProcess.processName == null" class="animate-if">
@@ -306,7 +309,7 @@
                                                     </div>
                                                 </div>
                                                 <hr/>
-                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'addFiles'">
+                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'kafka' && genConfig.type != 'addFiles'">
                                                     <div class="form-group">
                                                         <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey"><spring:message code="wfdesigner.page.propkey_name"/></label>
                                                         <div class="col-sm-10">
@@ -322,6 +325,58 @@
                                                     <div class="clearfix"></div>
                                                     <button type="submit" ng-click="insertProp(genConfig)" class="btn btn-primary  pull-right"><spring:message code="wfdesigner.page.button_add"/> {{genConfig.value}}</button>
                                                 </form>
+
+
+
+
+                                              <form class="form-horizontal" role="form" ng-if="genConfig.type == 'kafka'">
+                                              		  <div class="form-group">
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Topic Name</label>
+                                              			  <div class="col-sm-10">
+                                              				  <input type="text" class="form-control" id="Topic Name" placeholder="Topic Name" required>
+                                              			  </div>
+                                              		  </div>
+                                              		  <div class="form-group">
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">zookeper host</label>
+                                              			  <div class="col-sm-10">
+                                              				  <input type="text" class="form-control" id="zookeeper.connect" placeholder="zookeper host" required>
+                                              			  </div>
+                                              		  </div>
+
+                                              			<div class="form-group">
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">kafka brokers</label>
+                                              			  <div class="col-sm-10">
+                                              				  <input type="text" class="form-control" id="bootstrap.servers" placeholder="kafka brokers list" required>
+                                              			  </div>
+                                              		  </div>
+                                              		  <div class="form-group">
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Partitions</label>
+                                              			  <div class="col-sm-10">
+                                              				  <input type="text" class="form-control" id="offsets.topic.num.partitions" placeholder="Partitions" required>
+                                              			  </div>
+                                              		  </div>
+
+                                                      <div class="form-group">
+                                                          <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Replication</label>
+                                                          <div class="col-sm-10">
+                                                              <input type="text" class="form-control" id="offsets.topic.replication.factor" placeholder="Replication" required>
+                                                          </div>
+                                                      </div>
+
+                                                      <div class="form-group">
+                                                          <label for="workflowtype">Message Name</label>
+                                                          <select class="form-control" id="messageName">
+                                                              <option ng-repeat="message in newMessagesList" id="{{$index}}" value="{{ message.Value }}">{{ message.DisplayText }}</option>
+                                                          </select>
+                                                      </div>
+
+
+
+                                              		  <div class="clearfix"></div>
+                                              		  <button type="submit" ng-click="insertKafkaProp(chartViewModel.selectedProcess.processId)" class="btn btn-primary  pull-right">Submit kafka properties</button>
+                                              	  </form>
+
+
 
 
 
@@ -415,6 +470,12 @@
                                                     </div>
                                                     <div class="clearfix"></div>
                                                 </form>
+
+
+
+
+
+
                                             </div>
                                         </div>
                                     </div>
