@@ -23,7 +23,7 @@ import java.util.List;
 public class SparkStreamingAPI extends MetadataAPIBase {
     private static final Logger LOGGER = Logger.getLogger(SparkStreamingAPI.class);
 
-    @RequestMapping(value = "/getmessagecolumns/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getmessagecolumns/{id}", method = RequestMethod.POST)
     @ResponseBody
     public RestWrapperOptions listOptions(@PathVariable("id") Integer processId, Principal principal) {
 

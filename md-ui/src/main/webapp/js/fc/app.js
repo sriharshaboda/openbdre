@@ -397,6 +397,16 @@ console.log("property4 is "+property4);
 
 }
 
+$scope.fetchMessageColumns=function(processId){
+
+     var dataRecord = messagesAC('/mdrest/sparkstreaming/getmessagecolumns/', 'POST', [$scope.chartViewModel.getSelectedNodes()[0].data.pid]);
+    if (dataRecord) {
+        $scope.messageColumnNames = dataRecord;
+    } else {
+        alertBox('danger', 'Error has occured');
+    }
+}
+
 
 
 $scope.insertProp = function(cfgDetails) {
@@ -688,7 +698,7 @@ $scope.newPageProcessType = {};
 $scope.newPagePermissionType={};
 $scope.newPageUserRoles={};
 $scope.newPageWorkflowType = {};
-$scope.operators = ["contains","doesnot contains"];
+$scope.operators = ["equals","not equals", "contains","doesnot contains","begins with","ends with","greater than","lesser than"];
 $scope.intialiseNewProcessPage =function() {
 
     var busdomainOptions = busdomainOptionsAC('/mdrest/busdomain/options/', 'POST', '');

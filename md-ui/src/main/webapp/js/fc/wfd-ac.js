@@ -18,6 +18,19 @@ var busdomainOptionsAC = function (ajaxURL, type, arg) {
 	return returnObject;
 }
 
+var messagesAC = function (ajaxURL, type, arg) {
+	var returnObject;
+	switch(type) {
+		case 'POST':
+			ajaxURL = ajaxURL;
+			break;
+		default:
+			console.log('In AC function defualt block');
+	}
+	returnObject = ajaxCall(ajaxURL, type, arg, 'optionscall');
+	return returnObject;
+}
+
 var processtypeOptionslistAC = function (ajaxURL, type, arg) {
 	var returnObject;
 	switch(type) {
