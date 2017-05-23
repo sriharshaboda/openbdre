@@ -331,33 +331,49 @@
 
                                               <form class="form-horizontal" role="form" ng-if="genConfig.type == 'kafka'">
                                               		  <div class="form-group">
-                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Kafka property 1</label>
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Topic Name</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="Kafka property 1" placeholder="Kafka property 1" required>
+                                              				  <input type="text" class="form-control" id="Topic Name" placeholder="Topic Name" required>
                                               			  </div>
                                               		  </div>
                                               		  <div class="form-group">
-                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Kafka property 2</label>
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">zookeper host</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="Kafka property 2" placeholder="Kafka property 2" required>
+                                              				  <input type="text" class="form-control" id="zookeeper.connect" placeholder="zookeper host" required>
                                               			  </div>
                                               		  </div>
 
                                               			<div class="form-group">
-                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Kafka property 3</label>
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">kafka brokers</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="Kafka property 3" placeholder="Kafka property 3" required>
+                                              				  <input type="text" class="form-control" id="bootstrap.servers" placeholder="kafka brokers list" required>
                                               			  </div>
                                               		  </div>
                                               		  <div class="form-group">
-                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Kafka property 4</label>
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Partitions</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="Kafka property 4" placeholder="Kafka property 4" required>
+                                              				  <input type="text" class="form-control" id="offsets.topic.num.partitions" placeholder="Partitions" required>
                                               			  </div>
                                               		  </div>
 
+                                                      <div class="form-group">
+                                                          <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Replication</label>
+                                                          <div class="col-sm-10">
+                                                              <input type="text" class="form-control" id="offsets.topic.replication.factor" placeholder="Replication" required>
+                                                          </div>
+                                                      </div>
+
+                                                      <div class="form-group">
+                                                          <label for="workflowtype">Message Name</label>
+                                                          <select class="form-control" id="messageName">
+                                                              <option ng-repeat="message in newMessagesList" id="{{$index}}" value="{{ message.Value }}">{{ message.DisplayText }}</option>
+                                                          </select>
+                                                      </div>
+
+
+
                                               		  <div class="clearfix"></div>
-                                              		  <button type="submit" ng-click="insertKafkaProp(chartViewModel.selectedProcess.processId,'Kafka property 1','Kafka property 2','Kafka property 3','Kafka property 4')" class="btn btn-primary  pull-right">Submit kafka properties</button>
+                                              		  <button type="submit" ng-click="insertKafkaProp(chartViewModel.selectedProcess.processId)" class="btn btn-primary  pull-right">Submit kafka properties</button>
                                               	  </form>
 
 
