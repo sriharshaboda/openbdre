@@ -13,6 +13,7 @@ public class Filter implements Transformation {
     public DataFrame transform(Map<Integer,DataFrame> prevDataFrameMap, Map<Integer,List<Integer>> prevMap, Integer pid){
         //TODO: fetch the filter logic from DB
         Integer prevPid = prevMap.get(pid).get(0);
+        System.out.println("Inside filter prevPid = " + prevPid);
         DataFrame prevDataFrame = prevDataFrameMap.get(prevPid);
         DataFrame filteredDF =null;
         if(prevDataFrame!=null)
