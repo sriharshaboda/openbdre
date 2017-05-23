@@ -395,8 +395,9 @@ console.log("property2 is "+property2);
 console.log("property3 is "+property3);
 console.log("property4 is "+property4);
 
-
 }
+
+
 
 $scope.insertProp = function(cfgDetails) {
     var cfg = cfgDetails.key,
@@ -687,6 +688,7 @@ $scope.newPageProcessType = {};
 $scope.newPagePermissionType={};
 $scope.newPageUserRoles={};
 $scope.newPageWorkflowType = {};
+$scope.operators = ["contains","doesnot contains"];
 $scope.intialiseNewProcessPage =function() {
 
     var busdomainOptions = busdomainOptionsAC('/mdrest/busdomain/options/', 'POST', '');

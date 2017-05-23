@@ -2,6 +2,7 @@ package com.wipro.ats.bdre.md.dao;
 
 import com.wipro.ats.bdre.exception.MetadataException;
 import com.wipro.ats.bdre.md.dao.jpa.Messages;
+import com.wipro.ats.bdre.md.dao.jpa.Process;
 import com.wipro.ats.bdre.md.dao.jpa.Users;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -33,5 +34,14 @@ public class MessagesDAO {
             session.close();
         }
         return id;
+    }
+
+    public Messages get(String id) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Messages messages = (Messages) session.get(Messages.class, id);
+        session.getTransaction().commit();
+        session.close();
+        return messages;
     }
 }

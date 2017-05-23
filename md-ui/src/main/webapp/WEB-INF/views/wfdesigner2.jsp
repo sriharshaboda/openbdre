@@ -309,7 +309,7 @@
                                                     </div>
                                                 </div>
                                                 <hr/>
-                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'kafka' && genConfig.type != 'addFiles'">
+                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'kafka' && genConfig.type != 'filter' && genConfig.type != 'addFiles'">
                                                     <div class="form-group">
                                                         <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey"><spring:message code="wfdesigner.page.propkey_name"/></label>
                                                         <div class="col-sm-10">
@@ -361,11 +361,28 @@
                                               	  </form>
 
 
+                                                <form class="form-horizontal" role="form" ng-if="genConfig.type == 'filter'">
 
+                                                   <div class="form-group">
+                                                      <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">column</label>
+                                                      <select class="form-control" id="column">
+                                                          <option ng-repeat="column in messages" id="{{$index}}" value="{{ column }}">{{ column }}</option>
+                                                      </select>
+                                                  </div>
 
+                                                  <div class="form-group">
+                                                    <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">operation</label>
+                                                    <select class="form-control" id="operator">
+                                                        <option ng-repeat="operator in operators" id="{{$index}}" value="{{ operator }}">{{ operator }}</option>
+                                                    </select>
+                                                </div>
 
+                                                 <div class="form-group">
+                                                       <input type="text" class="form-control col-sm-10" id="filtervalue" required>
+                                                    </div>
 
-
+                                                    <div class="clearfix"></div>
+                                                </form>
 
 
                                                 <form class="form-horizontal" role="form" ng-if="genConfig.type == 'hql'">
