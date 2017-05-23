@@ -22,6 +22,8 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
+import org.apache.spark.streaming.scheduler.StreamingListener;
+import org.apache.spark.streaming.scheduler.StreamingListenerBatchCompleted;
 import scala.Tuple2;
 import transformations.Filter;
 import transformations.Join;
@@ -36,16 +38,17 @@ import java.util.*;
 public class StreamAnalyticsDriver implements Serializable {
 
     public static Map<Integer, Set<Integer>> prevMap = new HashMap<>();
-    public static Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
+    public Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
     public static List<Integer> listOfSourcePids = new ArrayList<>();
     public static List<Integer> listOfTransformations = new ArrayList<>();
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
     public static Integer parentProcessId = new Integer(151);
+    static int countEmitterCovered = 0;
 
     public static void main(String[] args) {
         //Integer parentProcessId = Integer.parseInt(args[0]);
-        parentProcessId = 151;
+       parentProcessId = 151;
         listOfSourcePids.add(152);
         listOfSourcePids.add(153);
 
@@ -70,6 +73,16 @@ public class StreamAnalyticsDriver implements Serializable {
         nextPidMap.put(151, "152,153");
         nextPidMap.put(158, "151");
         nextPidMap.put(159, "151");
+        /*parentProcessId = 151;
+        listOfSourcePids.add(152);
+        listOfSourcePids.add(153);
+        listOfTransformations.add(154);
+        listOfEmitters.add(157);
+        nextPidMap.put(151, "152,153");
+        nextPidMap.put(152, "154");
+        nextPidMap.put(153, "154");
+        nextPidMap.put(154, "157");
+        nextPidMap.put(157, "151");*/
 
         List<Integer> currentUpstreamList = new ArrayList<>();
         currentUpstreamList.addAll(listOfSourcePids);
@@ -83,15 +96,16 @@ public class StreamAnalyticsDriver implements Serializable {
         //TODO: Fetch batchDuration property from database
         long batchDuration = 10000;
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
-
+        StreamAnalyticsDriver streamAnalyticsDriver = new StreamAnalyticsDriver();
         //iterate till the list contains only one element and the element must be the parent pid indicating we have reached the end of pipeline
         while (!currentUpstreamList.isEmpty()) {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
-            StreamAnalyticsDriver streamAnalyticsDriver = new StreamAnalyticsDriver();
+
             System.out.println("prevMap = " + prevMap);
-            streamAnalyticsDriver.createDataFrames(ssc, currentUpstreamList, prevMap, nextPidMap);
             streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap);
         }
+        streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap);
+        ssc.addStreamingListener(new JobListener());
         ssc.start();
         ssc.awaitTermination();
     }
@@ -135,14 +149,12 @@ public class StreamAnalyticsDriver implements Serializable {
     }
 
     //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
-    public void createDataFrames(JavaStreamingContext ssc, List<Integer> currentUpstreamList, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap) {
+    public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap) {
         System.out.println("prevMap = " + prevMap);
-        //iterate through each upstream and create respective dataframes based on prev value if prevMap
-        for (Integer pid : currentUpstreamList) {
-            final Integer iteratorPid = pid;
+        //iterate through each source and create respective dataFrames for sources
+        for (Integer pid : listOfSourcePids) {
             System.out.println("pid = " + pid);
-            if (listOfSourcePids.contains(pid)) {
-                System.out.println("after printing pid inside loop= " + pid);
+                System.out.println("Creating DStream for source pid= " + pid);
                 //Found Source node, need to create DStream and cast to Dataframe
                 //Fetch Source Stream Type & Source Message Type from DB
                 String sourceType = "Kafka";
@@ -165,9 +177,8 @@ public class StreamAnalyticsDriver implements Serializable {
                                     JavaRDD<Row> rowRDD = rdd.map(new MessageTypeHandler());
                                     SchemaReader schemaReader = new SchemaReader();
                                     StructType schema = schemaReader.generateSchema(pid);
-                                    System.out.println("schema = " + schema);
                                     DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
-                                    dataFrame.show();
+                                    //dataFrame.show();
                                     pidDataFrameMap.put(pid, dataFrame);
                                     System.out.println("pidDataFrameMap = " + pidDataFrameMap);
                                     transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
@@ -178,26 +189,40 @@ public class StreamAnalyticsDriver implements Serializable {
                 }
                 //TODO: Add logic to handle other Source Types
             }
-        }
-
     }
 
     public void transformAndEmit(String nextPidString, Map<Integer, DataFrame> pidDataFrameMap) {
-        if (!nextPidString.equals(nextPidMap.get(parentProcessId))) {
+        System.out.println("nextPidString = " + nextPidString);
+        System.out.println("pidDataFrameMap = " + pidDataFrameMap);
+        if (!nextPidString.equals(nextPidMap.get(parentProcessId))) { //condition occurs when all emitters are finished and next is set to parentprocessid
             String[] nextPidStringArray = nextPidString.split(",");
             Integer[] nextPidInts = new Integer[nextPidStringArray.length];
             for (int i = 0; i < nextPidStringArray.length; i++) {
                 //cast String to Integer
                 nextPidInts[i] = Integer.parseInt(nextPidStringArray[i]);
+                System.out.println("nextPidInts[i] = " + nextPidInts[i]);
+                if(nextPidInts[i].equals(parentProcessId)){
+                    countEmitterCovered++;
+                    System.out.println("No.of Emitters covered ="+countEmitterCovered);
+                    if(countEmitterCovered>=listOfEmitters.size()) {
+                        System.out.println("clearing contents of pidDataFrameMap before clearing= " + pidDataFrameMap);
+                        pidDataFrameMap.clear();
+                        System.out.println("clearing contents of pidDataFrameMap before clearing= " + pidDataFrameMap);
+                        System.out.println("resetting countEmitterCovered" );
+                        countEmitterCovered=0;
+                        return;
+                    }
+                }
             }
             for (int i = 0; i < nextPidInts.length; i++) {
                 for (Integer prevPid : prevMap.get(nextPidInts[i])) {
-                    if (pidDataFrameMap.get(prevPid) == null)
+                    if (pidDataFrameMap.get(prevPid) == null) {
                         return;
+                    }
                 }
             }
-            // while()
             for (Integer pid : nextPidInts) {
+                System.out.println("pid for transformation or emitter= " + pid);
                 if (listOfTransformations.contains(pid)) {
                     //this pid is of type transformation, find prev pids to output the appropriate dataframe
                     Set<Integer> prevPids = prevMap.get(pid);
@@ -230,19 +255,29 @@ public class StreamAnalyticsDriver implements Serializable {
                 if (listOfEmitters.contains(pid)) {
                     //found emitter node, so get upstream pid and persist based on emitter
                     Set<Integer> prevPids = prevMap.get(pid);
+                    int count=0;
                     for (Integer prevPid : prevPids) {
+                        count++;
+                        System.out.println("count = " + count);
+                        System.out.println("currently trying to emit dataframe of prevPid = " + prevPid);
                         DataFrame prevDataFrame = pidDataFrameMap.get(prevPid);
                         String emitterType = "HDFSEmitter";
                         if (emitterType.equals("HDFSEmitter")) {
                             HDFSEmitter hdfsEmitter = new HDFSEmitter();
-                            hdfsEmitter.persist(prevDataFrame, pid);
+                            hdfsEmitter.persist(prevDataFrame, pid, prevPid);
                         }
                         //TODO: Handle logic for other emitters
+                        //pidDataFrameMap.remove(prevPid);
                     }
+                    //pidDataFrameMap.clear();
                 }
+
                 transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
             }
         }
+        /*else{
+            pidDataFrameMap.clear();
+        }*/
     }
 
     class FlattenKafkaMessage implements Function<Tuple2<String, String>, String> {
@@ -260,11 +295,11 @@ public class StreamAnalyticsDriver implements Serializable {
             String messageType = "ApacheLog";
             if (messageType.equals("ApacheLog")) {
                 attributes = new ApacheLogRegexParser().parseRecord(record);
-                System.out.println("attributes = " + attributes);
             }
             return RowFactory.create(attributes);
         }
     }
+
 
 }
 

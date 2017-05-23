@@ -9,10 +9,17 @@ import java.util.Date;
  */
 public class HDFSEmitter {
 
-    public void persist(DataFrame df, Integer pid){
-        System.out.println("Inside emitter hdfs pid = " + pid);
+    public void persist(DataFrame df, Integer pid, Integer prevPid){
+        System.out.println("Inside emitter hdfs, persisting pid = " + prevPid);
         long date = new Date().getTime();
-        if(df!=null)
-        df.rdd().saveAsTextFile("/user/cloudera/spark-streaming-data/"+ date+"/");
+        if(df.rdd().isEmpty())
+            System.out.println("dataframe is empty");
+        else{
+            System.out.println("Not empty - dataframe is non empty");
+            df.show();
+        }
+
+        if(df!=null && !df.rdd().isEmpty())
+        df.rdd().saveAsTextFile("/user/cloudera/spark-streaming-data/"+ date+"_"+pid+"/");
     }
 }

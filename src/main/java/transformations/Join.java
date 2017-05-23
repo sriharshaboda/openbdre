@@ -24,7 +24,7 @@ public class Join implements Transformation {
         DataFrame joinedDF = null;
         if(prevDF1!=null & prevDF2!=null)
          joinedDF = prevDF1.unionAll(prevDF2);
-
+         joinedDF.show();
 
         return joinedDF;
     }

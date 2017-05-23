@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class SchemaReader {
 
+    //TODO: update the schema automatically
     String schemaString = "ipAddress clientIdentd userID dateTimeString method endpoint protocol responseCode contentSize";
 
     public StructType generateSchema(int pid){

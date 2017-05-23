@@ -21,7 +21,7 @@ public class KafkaSource {
 
     public static Set<String> getTopics(int pid){
         Set<String> topics = new HashSet<>();
-        topics.add("test");
+        topics.add("test2");
         return topics;
     }
 
