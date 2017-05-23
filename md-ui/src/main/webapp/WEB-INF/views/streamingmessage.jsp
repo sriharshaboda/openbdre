@@ -131,7 +131,7 @@ wizard = $(document).ready(function() {
 												$(this).dialog("close");
 											}
 										}
-									}).html('<p><span class="jtable-confirm-message"><spring:message code="dataload.page.success_msg"/></span></p>');
+									}).html('<p><span class="jtable-confirm-message">Message successfully created </span></p>');
 								}
 							}
 
@@ -360,19 +360,19 @@ wizard = $(document).ready(function() {
 
 	</head>
 <body ng-app="myApp" ng-controller="myCtrl" >
-	<div class="page-header"><spring:message code="dataload.page.panel_heading"/></div>
+	<div class="page-header">Creating Message</div>
 	<div class="alert alert-info" role="alert">
-		<spring:message code="dataload.page.alert_info_outer_heading" />
+		Message details
 	</div>
 	<div id="bdre-data-load" ng-controller="myCtrl">
 
 
 
 
-			<h3><div class="number-circular">1</div><spring:message code="dataload.page.h3_div_2"/></h3>
+			<h3><div class="number-circular">1</div>Message details</h3>
             			<section>
             			 <div class="alert alert-info" role="alert">
-                                          <spring:message code="dataload.page.alert_info_form"/>
+                                          Message details form
                                         </div>
             <form class="form-horizontal" role="form" id="fileFormat">
 
@@ -401,14 +401,14 @@ wizard = $(document).ready(function() {
 
                                     </form>
             			</section>
-			<h3><div class="number-circular">2</div><spring:message code="dataload.page.raw_table_props"/></h3>
+			<h3><div class="number-circular">2</div>Message Schema</h3>
 			<section>
 			    <div id="rawTableColumnDetails"></div>
 			    </section>
 			<h3><div class="number-circular">3</div><spring:message code="dataload.page.confirm"/></h3>
 			<section>
 				<div id="Process">
-					<button id="createjobs" type="button" class="btn btn-primary btn-lg"><spring:message code="dataload.page.create_jobs"/></button>
+					<button id="createjobs" type="button" class="btn btn-primary btn-lg">Create Message</button>
 				</div>
 			</section>
 		</div>
@@ -420,7 +420,7 @@ wizard = $(document).ready(function() {
 		<script type="text/javascript">
 	$(document).ready(function () {
 	$('#rawTableColumnDetails').jtable({
-		title: '<spring:message code="dataload.page.title_raw_table"/>',
+		title: 'Message column details',
 		paging: false,
 		sorting: false,
 		create: false,
