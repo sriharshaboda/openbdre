@@ -1,9 +1,11 @@
 package com.wipro.ats.bdre.md.rest.util;
 
 import com.wipro.ats.bdre.md.api.base.MetadataAPIBase;
+import com.wipro.ats.bdre.md.beans.table.WorkflowType;
 import com.wipro.ats.bdre.md.dao.MessagesDAO;
 import com.wipro.ats.bdre.md.dao.jpa.Messages;
 import com.wipro.ats.bdre.md.rest.RestWrapper;
+import com.wipro.ats.bdre.md.rest.RestWrapperOptions;
 import com.wipro.ats.bdre.md.rest.ext.DataLoadAPI;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Created by cloudera on 5/21/17.
@@ -96,6 +100,36 @@ public class MessageSchemaAPI extends MetadataAPIBase {
 
         return restWrapper;
     }
+
+
+
+    @RequestMapping(value = {"/optionslist"}, method = RequestMethod.POST)
+
+
+    @ResponseBody
+    public RestWrapperOptions listOptions() {
+
+        RestWrapperOptions restWrapperOptions = null;
+        try {
+              List<Messages> messagesList=messagesDAO.list(0,0);
+
+            List<RestWrapperOptions.Option> options = new ArrayList<RestWrapperOptions.Option>();
+
+            for (Messages messages : messagesList) {
+                RestWrapperOptions.Option option = new RestWrapperOptions.Option(messages.getMessagename(),messages.getMessagename());
+                options.add(option);
+                LOGGER.info(option.getDisplayText());
+            }
+
+            restWrapperOptions = new RestWrapperOptions(options, RestWrapperOptions.OK);
+        } catch (Exception e) {
+            LOGGER.error(e);
+            restWrapperOptions = new RestWrapperOptions(e.getMessage(), RestWrapperOptions.ERROR);
+        }
+        return restWrapperOptions;
+    }
+
+
 
     @Override
     public Object execute(String[] params) {

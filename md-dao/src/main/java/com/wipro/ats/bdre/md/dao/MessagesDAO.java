@@ -4,11 +4,14 @@ import com.wipro.ats.bdre.exception.MetadataException;
 import com.wipro.ats.bdre.md.dao.jpa.Messages;
 import com.wipro.ats.bdre.md.dao.jpa.Users;
 import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Created by cloudera on 5/21/17.
@@ -34,4 +37,29 @@ public class MessagesDAO {
         }
         return id;
     }
+
+
+    public List<Messages> list(Integer pageNum, Integer numResults) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Criteria criteria = session.createCriteria(Messages.class);
+        criteria.setFirstResult(pageNum);
+        criteria.setMaxResults(numResults);
+        List<Messages> messagesList = criteria.list();
+        session.getTransaction().commit();
+        session.close();
+        return messagesList;
+    }
+
+
+
+    public Messages get(String id) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Messages messages = (Messages) session.get(Messages.class, id);
+        session.getTransaction().commit();
+        session.close();
+        return messages;
+    }
+
 }

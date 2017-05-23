@@ -52,6 +52,7 @@ angular.module('app', ['flowChart', ])
         $scope.operator_processTypes={};
         $scope.destination_processTypes={};
         $scope.chartViewModel={};
+        $scope.newMessagesList = {};
         //
         // Event handler for key-down on the flowchart.
         //
@@ -121,6 +122,14 @@ angular.module('app', ['flowChart', ])
             jQuery.post('/mdrest/processtype/options/'+parentType,function(data){$scope.processTypes=data});
             jQuery.post('/mdrest/processtype/options_source/'+parentType,function(data){$scope.source_processTypes=data});
             jQuery.post('/mdrest/processtype/options_operator/'+parentType,function(data){$scope.operator_processTypes=data});
+            var messagesOptionslist = workflowtypeOptionslistAC('/mdrest/message/optionslist',  'POST', '');
+                if (messagesOptionslist) {
+                    $scope.newMessagesList = messagesOptionslist;
+                    console.log('info -- no messages options listed');
+                }
+                else {
+                    console.log('messagesOptionslist not loaded');
+                }
 
 
             //
@@ -394,19 +403,20 @@ var value2=document.getElementById("zookeeper.connect").value;
 var value3=document.getElementById("bootstrap.servers").value;
 var value4=document.getElementById("offsets.topic.num.partitions").value;
 var value5=document.getElementById("offsets.topic.replication.factor").value;
+var value6=document.getElementById("messageName").value;
 map["Topic Name"]=value1;
 map["zookeeper.connect"]=value2;
 map["bootstrap.servers"]=value3;
 map["offsets.topic.num.partitions"]=value4;
 map["offsets.topic.replication.factor"]=value5;
-
+map["messageName"]=value6;
 console.log("processId is "+processId);
 console.log("property1 is "+value1);
 console.log("property2 is "+value2);
 console.log("property3 is "+value3);
 console.log("property4 is "+value4);
 console.log("property5 is "+value5)
-
+console.log("property6 is "+value6);
 
 
                        $.ajax({
@@ -785,6 +795,9 @@ $scope.createFirstProcess = function() {
     postData = $.param(postData),
     dataRecord = processAC('/mdrest/process', 'PUT', postData);
     if (dataRecord) {
+        if(dataRecord.processTypeId==41)
+        location.href='/mdui/pages/wfdesigner2.page?processId='+ dataRecord.processId;
+        else
         location.href='/mdui/pages/wfdesigner.page?processId='+ dataRecord.processId;
         console.log('info', 'Parent process created');
     }

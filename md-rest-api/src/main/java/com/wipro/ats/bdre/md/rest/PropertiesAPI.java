@@ -130,6 +130,9 @@ public class PropertiesAPI extends MetadataAPIBase {
                 propertiesId.setProcessId(processId);
                 propertiesId.setPropKey(string);
                 properties.setId(propertiesId);
+                if (string.equals("messageName"))
+                    properties.setConfigGroup("message");
+                else
                 properties.setConfigGroup("kafka");
                 properties.setProcess(process);
                 properties.setPropValue(map.get(string));

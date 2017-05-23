@@ -344,7 +344,7 @@
                                               		  </div>
 
                                               			<div class="form-group">
-                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">kafka brokers list</label>
+                                              			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">kafka brokers</label>
                                               			  <div class="col-sm-10">
                                               				  <input type="text" class="form-control" id="bootstrap.servers" placeholder="kafka brokers list" required>
                                               			  </div>
@@ -362,6 +362,15 @@
                                                               <input type="text" class="form-control" id="offsets.topic.replication.factor" placeholder="Replication" required>
                                                           </div>
                                                       </div>
+
+                                                      <div class="form-group">
+                                                          <label for="workflowtype">Message Name</label>
+                                                          <select class="form-control" id="messageName">
+                                                              <option ng-repeat="message in newMessagesList" id="{{$index}}" value="{{ message.Value }}">{{ message.DisplayText }}</option>
+                                                          </select>
+                                                      </div>
+
+
 
                                               		  <div class="clearfix"></div>
                                               		  <button type="submit" ng-click="insertKafkaProp(chartViewModel.selectedProcess.processId)" class="btn btn-primary  pull-right">Submit kafka properties</button>
