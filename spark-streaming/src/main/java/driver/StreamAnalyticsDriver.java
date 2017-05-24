@@ -45,7 +45,9 @@ public class StreamAnalyticsDriver implements Serializable {
     static int countEmitterCovered = 0;
 
     public static void main(String[] args) {
-        //Integer parentProcessId = Integer.parseInt(args[0]);
+        Integer parentProcessId = Integer.parseInt(args[0]);
+
+
         parentProcessId = 151;
         listOfSourcePids.add(152);
         listOfSourcePids.add(153);
