@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Created by cloudera on 5/17/17.
  */
-public class ApacheLogRegexParser implements MessageParser{
+public class RegexParser implements MessageParser{
     // Example Apache log line:
     //   127.0.0.1 - - [21/Jul/2014:9:55:27 -0800] "GET /home.html HTTP/1.1" 200 2048
     private static final Logger logger = Logger.getLogger("Access");
@@ -17,8 +17,9 @@ public class ApacheLogRegexParser implements MessageParser{
     private static final Pattern PATTERN = Pattern.compile(LOG_ENTRY_PATTERN);
 
     @Override
-    public String[] parseRecord(String record) {
+    public String[] parseRecord(String record,Integer pid) {
         Matcher m = PATTERN.matcher(record);
+
         if (!m.find()) {
             logger.log(Level.ALL, "Cannot parse logline" + record);
             throw new RuntimeException("Error parsing logline");

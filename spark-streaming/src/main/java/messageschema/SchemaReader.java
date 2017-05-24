@@ -28,7 +28,7 @@ public class SchemaReader {
         GetProcess getProcess=new GetProcess();
         ProcessInfo processInfo=getProcess.getProcess(pid);
         GetProperties getProperties=new GetProperties();
-        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(String.valueOf(pid),"batchDuration");
+        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(String.valueOf(pid),"message");
         String messageName="";
         if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
             messageName=propertiesInfoList.get(0).getValue();

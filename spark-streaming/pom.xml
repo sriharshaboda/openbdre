@@ -9,7 +9,7 @@
 </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wipro.ats.bdre</groupId>
-    <artifactId>apachelog</artifactId>
+    <artifactId>stream-analytics</artifactId>
 
     <build>
         <plugins>

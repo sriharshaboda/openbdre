@@ -40,6 +40,7 @@
 40,'SubWorkflow',39
 41,'Streaming Job',null
 42,'source_Kafka',41
-43,'operator_Count',41
+43,'operator_Filter',41
+45,'operator_Union',41
 44,'destination_HDFS',41
 

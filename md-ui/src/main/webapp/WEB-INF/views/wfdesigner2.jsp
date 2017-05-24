@@ -333,33 +333,33 @@
                                               		  <div class="form-group">
                                               			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Topic Name</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="Topic Name" placeholder="Topic Name" required>
+                                              				  <input type="text" class="form-control" id="Topic Name" placeholder="Topic Name" >
                                               			  </div>
                                               		  </div>
                                               		  <div class="form-group">
                                               			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">zookeper host</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="zookeeper.connect" placeholder="zookeper host" required>
+                                              				  <input type="text" class="form-control" id="zookeeper.connect" placeholder="zookeper host" >
                                               			  </div>
                                               		  </div>
 
                                               			<div class="form-group">
                                               			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">kafka brokers</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="bootstrap.servers" placeholder="kafka brokers list" required>
+                                              				  <input type="text" class="form-control" id="bootstrap.servers" placeholder="kafka brokers list" >
                                               			  </div>
                                               		  </div>
                                               		  <div class="form-group">
                                               			  <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Partitions</label>
                                               			  <div class="col-sm-10">
-                                              				  <input type="text" class="form-control" id="offsets.topic.num.partitions" placeholder="Partitions" required>
+                                              				  <input type="text" class="form-control" id="offsets.topic.num.partitions" placeholder="Partitions" >
                                               			  </div>
                                               		  </div>
 
                                                       <div class="form-group">
                                                           <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Replication</label>
                                                           <div class="col-sm-10">
-                                                              <input type="text" class="form-control" id="offsets.topic.replication.factor" placeholder="Replication" required>
+                                                              <input type="text" class="form-control" id="offsets.topic.replication.factor" placeholder="Replication" >
                                                           </div>
                                                       </div>
 
