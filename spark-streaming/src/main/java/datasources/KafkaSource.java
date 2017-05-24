@@ -17,11 +17,11 @@ public class KafkaSource {
         Map<String,String> kafkaParams = new  HashMap<String,String>();
         kafkaParams.put("metadata.broker.list", "localhost:9092");
         return kafkaParams;
-        }
+    }
 
     public static Set<String> getTopics(int pid){
-        Set<String> topics = new HashSet<String>();
-        topics.add("test");
+        Set<String> topics = new HashSet<>();
+        topics.add("test2");
         return topics;
     }
 

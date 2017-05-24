@@ -22,6 +22,7 @@ public class Filter implements Transformation {
         DataFrame filteredDF =null;
         if(prevDataFrame!=null)
             filteredDF = prevDataFrame.filter(prevDataFrame.col("responseCode").gt("200"));
+        filteredDF.show();
         return filteredDF;
     }
 }

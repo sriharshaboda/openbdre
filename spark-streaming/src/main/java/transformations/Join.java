@@ -23,8 +23,8 @@ public class Join implements Transformation {
         DataFrame prevDF2 = prevDataFrameMap.get(prevPid2);
         DataFrame joinedDF = null;
         if(prevDF1!=null & prevDF2!=null)
-         joinedDF = prevDF1.unionAll(prevDF2);
-
+            joinedDF = prevDF1.unionAll(prevDF2);
+        joinedDF.show();
 
         return joinedDF;
     }

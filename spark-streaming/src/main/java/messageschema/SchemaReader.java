@@ -12,15 +12,16 @@ import java.util.List;
  */
 public class SchemaReader {
 
+    //TODO: update the schema automatically
     String schemaString = "ipAddress clientIdentd userID dateTimeString method endpoint protocol responseCode contentSize";
 
     public StructType generateSchema(int pid){
-    // Generate the schema based on the string of schema
-    List<StructField> fields = new ArrayList<>();
-    for (String fieldName : schemaString.split(" ")) {
-        StructField field = DataTypes.createStructField(fieldName, DataTypes.StringType, true);
-        fields.add(field);
-    }
+        // Generate the schema based on the string of schema
+        List<StructField> fields = new ArrayList<>();
+        for (String fieldName : schemaString.split(" ")) {
+            StructField field = DataTypes.createStructField(fieldName, DataTypes.StringType, true);
+            fields.add(field);
+        }
         StructType schema = DataTypes.createStructType(fields);
         return schema;
     }

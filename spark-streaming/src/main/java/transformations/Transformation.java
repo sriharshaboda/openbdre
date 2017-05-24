@@ -2,7 +2,6 @@ package transformations;
 
 import org.apache.spark.sql.DataFrame;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
