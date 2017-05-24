@@ -437,9 +437,60 @@ console.log("property6 is "+value6);
 
 }
 
+$scope.insertOperatorProp=function(processId){
+var value1=document.getElementById("column").value;
+var value2=document.getElementById("operator").value;
+var value3=document.getElementById("filtervalue").value;
+console.log("values are "+value1+" "+value2+" "+value3);
+console.log("processId is "+processId);
+var map=new Object();
+map["column"]=value1;
+map["operator"]=value2;
+map["filtervalue"]=value3;
+    $.ajax({
+            type: "POST",
+            url: "/mdrest/properties/"+processId,
+            data: jQuery.param(map),
+            success: function(data) {
+                if(data.Result == "OK") {
+                    alertBox("info","kafka properties added");
+                }
+                else
+                alertBox("warning","Error occured");
+
+            }
+
+        });
+}
+
+
+$scope.insertHdfsProp=function(processId){
+var value1=document.getElementById("hdfs path").value;
+console.log("values are "+value1);
+console.log("processId is "+processId);
+var map=new Object();
+map["hdfs_path"]=value1;
+    $.ajax({
+            type: "POST",
+            url: "/mdrest/properties/"+processId,
+            data: jQuery.param(map),
+            success: function(data) {
+                if(data.Result == "OK") {
+                    alertBox("info","HDFS properties added");
+                }
+                else
+                alertBox("warning","Error occured");
+
+            }
+
+        });
+}
+
+
+
 $scope.fetchMessageColumns=function(processId){
 
-     var dataRecord = messagesAC('/mdrest/sparkstreaming/getmessagecolumns/', 'POST', [$scope.chartViewModel.getSelectedNodes()[0].data.pid]);
+     var dataRecord = messagesAC('/mdrest/sparkstreaming/getmessagecolumns/'+processId, 'POST', [$scope.chartViewModel.getSelectedNodes()[0].data.pid]);
     if (dataRecord) {
         $scope.messageColumnNames = dataRecord;
     } else {
@@ -788,7 +839,7 @@ $scope.intialiseNewProcessPage =function() {
 // Create first process function
 //
 $scope.createFirstProcess = function() {
-    
+
     var postData = {
         'processName': $('#processname').val(),
         'description': $('#description').val(),
@@ -836,7 +887,7 @@ $scope.confirmDialog = function (message, callBackFunctionName){
             width: 'auto', resizable: false,
             buttons: {
                 Yes: function () {
-                    // $(obj).removeAttr('onclick');                                
+                    // $(obj).removeAttr('onclick');
                     // $(obj).parents('.Parent').remove();
                     $(this).dialog("close");
                     callBackFunction(true);

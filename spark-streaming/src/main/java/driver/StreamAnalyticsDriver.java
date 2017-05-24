@@ -1,5 +1,10 @@
 package driver;
 
+import com.wipro.ats.bdre.GetParentProcessType;
+import com.wipro.ats.bdre.md.api.GetProcess;
+import com.wipro.ats.bdre.md.api.GetProperties;
+import com.wipro.ats.bdre.md.beans.GetPropertiesInfo;
+import com.wipro.ats.bdre.md.beans.ProcessInfo;
 import datasources.KafkaSource;
 import emitters.HDFSEmitter;
 import kafka.serializer.StringDecoder;
@@ -46,43 +51,28 @@ public class StreamAnalyticsDriver implements Serializable {
 
     public static void main(String[] args) {
         Integer parentProcessId = Integer.parseInt(args[0]);
+        GetProcess getProcess = new GetProcess();
+        List<ProcessInfo> subProcessList = getProcess.execute(args);
+        for(ProcessInfo processInfo:subProcessList)
+        {
+            nextPidMap.put(processInfo.getProcessId(),processInfo.getNextProcessIds());
+            GetParentProcessType getParentProcessType=new GetParentProcessType();
+            String processTypeName=getParentProcessType.processTypeName(processInfo.getProcessId());
+            if(processTypeName.contains("source"))
+            {
+                listOfSourcePids.add(processInfo.getProcessId());
+            }
+             if(processTypeName.contains("operator"))
+            {
+                listOfTransformations.add(processInfo.getProcessId());
+            }
+            if(processTypeName.contains("destination"))
+            {
+                listOfEmitters.add(processInfo.getProcessId());
+            }
 
+        }
 
-        parentProcessId = 151;
-        listOfSourcePids.add(152);
-        listOfSourcePids.add(153);
-
-
-        listOfTransformations.add(154);
-        listOfTransformations.add(155);
-        listOfTransformations.add(156);
-        listOfTransformations.add(157);
-
-
-        listOfEmitters.add(158);
-        listOfEmitters.add(159);
-
-
-        nextPidMap.put(151, "152,153");
-        nextPidMap.put(152, "154");
-        nextPidMap.put(153, "154,155");
-        nextPidMap.put(154, "157");
-        nextPidMap.put(155, "156");
-        nextPidMap.put(156, "158,159");
-        nextPidMap.put(157, "158");
-        nextPidMap.put(151, "152,153");
-        nextPidMap.put(158, "151");
-        nextPidMap.put(159, "151");
-        /*parentProcessId = 151;
-        listOfSourcePids.add(152);
-        listOfSourcePids.add(153);
-        listOfTransformations.add(154);
-        listOfEmitters.add(157);
-        nextPidMap.put(151, "152,153");
-        nextPidMap.put(152, "154");
-        nextPidMap.put(153, "154");
-        nextPidMap.put(154, "157");
-        nextPidMap.put(157, "151");*/
 
         List<Integer> currentUpstreamList = new ArrayList<>();
         currentUpstreamList.addAll(listOfSourcePids);
@@ -94,7 +84,13 @@ public class StreamAnalyticsDriver implements Serializable {
         SparkConf conf = new SparkConf().setAppName("Log Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
         //TODO: Fetch batchDuration property from database
+        GetProperties getProperties=new GetProperties();
+        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"batchDuration");
         long batchDuration = 10000;
+          if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
+             batchDuration = Long.parseLong(propertiesInfoList.get(0).getValue());
+
+
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
         StreamAnalyticsDriver streamAnalyticsDriver = new StreamAnalyticsDriver();
         //iterate till the list contains only one element and the element must be the parent pid indicating we have reached the end of pipeline
@@ -245,6 +241,8 @@ public class StreamAnalyticsDriver implements Serializable {
                         Integer prevPid = prevPidList.get(0);
                         //TODO: Fetch the transformation type from DB
                         String transformationType = "filter";
+                        GetParentProcessType getParentProcessType=new GetParentProcessType();
+                        transformationType=getParentProcessType.processTypeName(pid);
                         if (transformationType.equals("filter")) {
                             Filter filter = new Filter();
                             DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);

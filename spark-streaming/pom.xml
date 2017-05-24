@@ -2,11 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+    <artifactId>bdre-app</artifactId>
+    <groupId>com.wipro.ats.bdre</groupId>
+    <version>1.1-SNAPSHOT</version>
+</parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.wipro.test</groupId>
+    <groupId>com.wipro.ats.bdre</groupId>
     <artifactId>apachelog</artifactId>
-    <version>1.0-SNAPSHOT</version>
+
     <build>
         <plugins>
             <plugin>
@@ -21,6 +25,23 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>md_api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>im-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>md-dao</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>

@@ -309,7 +309,7 @@
                                                     </div>
                                                 </div>
                                                 <hr/>
-                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'kafka' && genConfig.type != 'filter' && genConfig.type != 'addFiles'">
+                                                <form class="form-horizontal" role="form" ng-if="genConfig.type != 'hql'  && genConfig.type != 'hadoopstream' && genConfig.type != 'r'  && genConfig.type != 'spark' && genConfig.type != 'pig' && genConfig.type != 'shell' && genConfig.type != 'kafka' && genConfig.type != 'filter' && genConfig.type != 'hdfs' && genConfig.type != 'addFiles'">
                                                     <div class="form-group">
                                                         <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey"><spring:message code="wfdesigner.page.propkey_name"/></label>
                                                         <div class="col-sm-10">
@@ -382,7 +382,7 @@
                                                    <div class="form-group">
                                                       <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">column</label>
                                                       <select class="form-control" id="column" ng-click="fetchMessageColumns(chartViewModel.selectedProcess.processId)" >
-                                                          <option ng-repeat="column in messageColumnNames" id="{{$index}}" value="{{ column }}">{{ column }}</option>
+                                                          <option ng-repeat="column in messageColumnNames" id="{{$index}}" value="{{ column.Value }}">{{ column.DisplayText }}</option>
                                                       </select>
                                                   </div>
 
@@ -398,8 +398,23 @@
                                                     </div>
 
                                                     <div class="clearfix"></div>
+                                                     <button type="submit" ng-click="insertOperatorProp(chartViewModel.selectedProcess.processId)" class="btn btn-primary  pull-right">Submit Transformation properties</button>
                                                 </form>
 
+
+
+
+                                            <form class="form-horizontal" role="form" ng-if="genConfig.type == 'hdfs'">
+
+                                                  <div class="form-group">
+                                                   <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">Hdfs Path</label>
+                                                   <div class="col-sm-10">
+                                                       <input type="text" class="form-control" id="hdfs path" placeholder="hdfs path" required>
+                                                   </div>
+                                               </div>
+                                                    <div class="clearfix"></div>
+                                                    <button type="submit" ng-click="insertHdfsProp(chartViewModel.selectedProcess.processId)" class="btn btn-primary  pull-right">Submit HDFS properties</button>
+                                                </form>
 
                                                 <form class="form-horizontal" role="form" ng-if="genConfig.type == 'hql'">
 
@@ -518,7 +533,7 @@
                                                 </div>
                                                 <!-- Split button -->
                                                 <div class="btn-group">
-                                                <button type="button" class="btn btn-default">Add operator</button>
+                                                <button type="button" class="btn btn-default">Add Transformation</button>
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <span class="sr-only"><spring:message code="wfdesigner.page.button_dropdown"/></span>&nbsp;
                                                     <span class="caret"></span>
