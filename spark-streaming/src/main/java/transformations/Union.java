@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Created by cloudera on 5/22/17.
  */
-public class Join implements Transformation {
+public class Union implements Transformation {
     @Override
     public DataFrame transform(Map<Integer,DataFrame> prevDataFrameMap, Map<Integer,Set<Integer>> prevMap, Integer pid){
         List<Integer> prevPidList = new ArrayList<>();
@@ -21,11 +21,11 @@ public class Join implements Transformation {
         System.out.println("Inside join prevPid2 = " + prevPid2);
         DataFrame prevDF1 = prevDataFrameMap.get(prevPid1);
         DataFrame prevDF2 = prevDataFrameMap.get(prevPid2);
-        DataFrame joinedDF = null;
+        DataFrame unionedDF = null;
         if(prevDF1!=null & prevDF2!=null)
-            joinedDF = prevDF1.unionAll(prevDF2);
-        joinedDF.show();
+            unionedDF = prevDF1.unionAll(prevDF2);
+        unionedDF.show();
 
-        return joinedDF;
+        return unionedDF;
     }
 }

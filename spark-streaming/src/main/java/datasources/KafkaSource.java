@@ -12,7 +12,7 @@ public class KafkaSource {
 
     Map<String,String> kafkaParams;
     Set<String> topics;
-
+    //TODO fetch props from DB
     public static Map<String,String> getKafkaParams(int pid){
         Map<String,String> kafkaParams = new  HashMap<String,String>();
         kafkaParams.put("metadata.broker.list", "localhost:9092");
