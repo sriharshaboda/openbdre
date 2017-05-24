@@ -5,10 +5,12 @@ import com.wipro.ats.bdre.md.api.GetProcess;
 import com.wipro.ats.bdre.md.api.GetProperties;
 import com.wipro.ats.bdre.md.beans.GetPropertiesInfo;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
+import com.wipro.ats.bdre.md.dao.MessagesDAO;
+import com.wipro.ats.bdre.md.dao.jpa.Messages;
 import datasources.KafkaSource;
 import emitters.HDFSEmitter;
 import kafka.serializer.StringDecoder;
-import messageformat.ApacheLogRegexParser;
+import messageformat.RegexParser;
 import messageformat.DelimitedTextParser;
 import messageschema.SchemaReader;
 import org.apache.commons.collections.map.HashedMap;
@@ -29,6 +31,7 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import scala.Tuple2;
 import transformations.Filter;
 import transformations.Union;
@@ -41,6 +44,8 @@ import java.util.*;
  * Created by cloudera on 5/18/17.
  */
 public class StreamAnalyticsDriver implements Serializable {
+    @Autowired
+   static MessagesDAO messagesDAO;
 
     public static Map<Integer, Set<Integer>> prevMap = new HashMap<>();
     public Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
@@ -66,6 +71,17 @@ public class StreamAnalyticsDriver implements Serializable {
             if(processTypeName.contains("source"))
             {
                 listOfSourcePids.add(processInfo.getProcessId());
+
+
+                GetProperties getProperties=new GetProperties();
+                List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
+                if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
+                {
+                    String messageName=propertiesInfoList.get(0).getValue();
+                    Messages messages=messagesDAO.get(messageName);
+                    pidMessageTypeMap.put(processInfo.getProcessId(),messages.getFormat());
+                }
+
             }
              if(processTypeName.contains("operator"))
             {
@@ -77,8 +93,6 @@ public class StreamAnalyticsDriver implements Serializable {
             }
 
         }
-        pidMessageTypeMap.put(152,"ApacheLog");
-        pidMessageTypeMap.put(153,"Delimited");
 
         List<Integer> currentUpstreamList = new ArrayList<>();
         currentUpstreamList.addAll(listOfSourcePids);
@@ -184,23 +198,33 @@ public class StreamAnalyticsDriver implements Serializable {
                                 SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
                                 // Convert RDD[String] to RDD[Row] to DataFrame
                                 JavaRDD<Row> rowRDD = rdd.map(new Function<String, Row>() {
-                                                                  @Override
-                                                                  public Row call(String record) {
-                                                                      System.out.println("Inside message handler,sourcePid = " + pid);
-                                                                      Object[] attributes = new Object[]{};
-                                                                      //TODO: fetch messageType from sourcePid variable
-                                                                      String messageType = broadcastVar.value().get(pid);
-                                                                      //String messageType = pidMessageTypeMap.get(pid);
-                                                                      //String messageType = "ApacheLog";
-                                                                      //TODO: Add logic to handle other message types like delimited, etc..
-                                                                      if (messageType.equals("ApacheLog")) {
-                                                                          attributes = new ApacheLogRegexParser().parseRecord(record, pid);
-                                                                      } else if (messageType.equals("Delimited")) {
-                                                                          attributes = new DelimitedTextParser().parseRecord(record, pid);
-                                                                      }
-                                                                      return RowFactory.create(attributes);
-                                                                  }
-                                                              }
+                              @Override
+                              public Row call(String record) {
+                                  System.out.println("Inside message handler,sourcePid = " + pid);
+                                  Object[] attributes = new Object[]{};
+                                  //TODO: fetch messageType from sourcePid variable
+                                  String messageType="";
+                                  GetProperties getProperties=new GetProperties();
+                                  List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
+                                  if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
+                                  {
+                                      String messageName=propertiesInfoList.get(0).getValue();
+                                      Messages messages=messagesDAO.get(messageName);
+                                      messageType=messages.getFormat();
+                                  }
+
+                                  //String messageType = broadcastVar.value().get(pid);
+                                  //String messageType = pidMessageTypeMap.get(pid);
+                                  //String messageType = "Regex";
+                                  //TODO: Add logic to handle other message types like delimited, etc..
+                                  if (messageType.equals("Regex")) {
+                                      attributes = new RegexParser().parseRecord(record, pid);
+                                  } else if (messageType.equals("Delimited")) {
+                                      attributes = new DelimitedTextParser().parseRecord(record, pid);
+                                  }
+                                  return RowFactory.create(attributes);
+                              }
+                          }
                                 );
                                 SchemaReader schemaReader = new SchemaReader();
                                 StructType schema = schemaReader.generateSchema(pid);
@@ -256,8 +280,10 @@ public class StreamAnalyticsDriver implements Serializable {
                     if (prevPids.size() > 1) {
                         //obtain list of corresponding prevDataFrames for all prevPids
                         DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
-
-                        String transformationType = "union";
+                        GetParentProcessType getParentProcessType=new GetParentProcessType();
+                        String processTypeName=getParentProcessType.processTypeName(pid);
+                        String transformationType=processTypeName.replace("operator_","");
+                        //String transformationType = "union";
                         if (transformationType.equals("union")) {
                             Union union = new Union();
                             DataFrame dataFramePostTransformation = union.transform(pidDataFrameMap, prevMap, pid);
@@ -273,7 +299,7 @@ public class StreamAnalyticsDriver implements Serializable {
                         //TODO: Fetch the transformation type from DB
                         String transformationType = "filter";
                         GetParentProcessType getParentProcessType=new GetParentProcessType();
-                        transformationType=getParentProcessType.processTypeName(pid);
+                        transformationType=getParentProcessType.processTypeName(pid).replace("operator_","");
                         if (transformationType.equals("filter")) {
                             Filter filter = new Filter();
                             DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);
