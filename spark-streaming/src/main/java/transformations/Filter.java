@@ -25,7 +25,8 @@ public class Filter implements Transformation {
         GetProperties getProperties=new GetProperties();
         List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(pid.toString(),"kafka");
         String check="";
-        int tmp=0;
+        String filterValue=new String();
+        String colName=new String();
         for(GetPropertiesInfo getPropertiesInfo:propertiesInfoList)
         {
             if(getPropertiesInfo.getKey().equals("operator"))
@@ -34,15 +35,19 @@ public class Filter implements Transformation {
             }
             if(getPropertiesInfo.getKey().equals("filtervalue"))
             {
-                tmp= Integer.parseInt(getPropertiesInfo.getValue());
+                filterValue= getPropertiesInfo.getValue();
+            }
+            if(getPropertiesInfo.getKey().equals("column"))
+            {
+                colName= getPropertiesInfo.getValue();
             }
         }
 
         if(prevDataFrame!=null){
             if (check.equals("equals"))
-                filteredDF = prevDataFrame.filter(prevDataFrame.col("responseCode").gt(tmp));
+                filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).equalTo(filterValue));
             else
-            filteredDF = prevDataFrame.filter(prevDataFrame.col("responseCode").gt(tmp));
+            filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).gt(filterValue));
         }
         filteredDF.show();
         return filteredDF;
