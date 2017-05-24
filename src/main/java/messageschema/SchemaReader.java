@@ -16,6 +16,7 @@ public class SchemaReader {
     String schemaString = "ipAddress clientIdentd userID dateTimeString method endpoint protocol responseCode contentSize";
 
     public StructType generateSchema(int pid){
+        System.out.println("Inside schema generator pid = " + pid);
     // Generate the schema based on the string of schema
     List<StructField> fields = new ArrayList<>();
     for (String fieldName : schemaString.split(" ")) {

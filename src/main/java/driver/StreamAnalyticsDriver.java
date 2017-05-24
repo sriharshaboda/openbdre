@@ -4,6 +4,7 @@ import datasources.KafkaSource;
 import emitters.HDFSEmitter;
 import kafka.serializer.StringDecoder;
 import messageformat.ApacheLogRegexParser;
+import messageformat.DelimitedTextParser;
 import messageschema.SchemaReader;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.SparkConf;
@@ -11,6 +12,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
@@ -22,11 +24,9 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
-import org.apache.spark.streaming.scheduler.StreamingListener;
-import org.apache.spark.streaming.scheduler.StreamingListenerBatchCompleted;
 import scala.Tuple2;
 import transformations.Filter;
-import transformations.Join;
+import transformations.Union;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,12 +43,15 @@ public class StreamAnalyticsDriver implements Serializable {
     public static List<Integer> listOfTransformations = new ArrayList<>();
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
+    public static Map<Integer,String> pidMessageTypeMap = new HashedMap();
+
     public static Integer parentProcessId = new Integer(151);
     static int countEmitterCovered = 0;
+    Integer sourcePid = 0;
 
     public static void main(String[] args) {
         //Integer parentProcessId = Integer.parseInt(args[0]);
-       parentProcessId = 151;
+        parentProcessId = 151;
         listOfSourcePids.add(152);
         listOfSourcePids.add(153);
 
@@ -73,6 +76,8 @@ public class StreamAnalyticsDriver implements Serializable {
         nextPidMap.put(151, "152,153");
         nextPidMap.put(158, "151");
         nextPidMap.put(159, "151");
+        pidMessageTypeMap.put(152,"ApacheLog");
+        pidMessageTypeMap.put(153,"Delimited");
         /*parentProcessId = 151;
         listOfSourcePids.add(152);
         listOfSourcePids.add(153);
@@ -93,6 +98,8 @@ public class StreamAnalyticsDriver implements Serializable {
         // Create a Spark Context.
         SparkConf conf = new SparkConf().setAppName("Log Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
+        Broadcast<Map<Integer,String>> broadcastVar = sc.broadcast(pidMessageTypeMap);
+
         //TODO: Fetch batchDuration property from database
         long batchDuration = 10000;
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
@@ -104,7 +111,7 @@ public class StreamAnalyticsDriver implements Serializable {
             System.out.println("prevMap = " + prevMap);
             streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap);
         }
-        streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap);
+        streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap,broadcastVar);
         ssc.addStreamingListener(new JobListener());
         ssc.start();
         ssc.awaitTermination();
@@ -149,46 +156,69 @@ public class StreamAnalyticsDriver implements Serializable {
     }
 
     //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
-    public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap) {
+    public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap, Broadcast<Map<Integer,String>> broadcastVar) {
         System.out.println("prevMap = " + prevMap);
         //iterate through each source and create respective dataFrames for sources
         for (Integer pid : listOfSourcePids) {
             System.out.println("pid = " + pid);
-                System.out.println("Creating DStream for source pid= " + pid);
-                //Found Source node, need to create DStream and cast to Dataframe
-                //Fetch Source Stream Type & Source Message Type from DB
-                String sourceType = "Kafka";
+            System.out.println("Creating DStream for source pid= " + pid);
+            //Found Source node, need to create DStream and cast to Dataframe
+            //Fetch Source Stream Type & Source Message Type from DB
+            String sourceType = "Kafka";
 
-                if (sourceType.equals("Kafka")) {
-                    System.out.println("inside source  = " + sourceType);
-                    Map<String, String> kafkaParams = KafkaSource.getKafkaParams(pid);
-                    Set<String> topics = KafkaSource.getTopics(pid);
-                    JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
-                    JavaDStream<String> msgDataStream = directKafkaStream.map(new FlattenKafkaMessage());
-                    msgDataStream.foreachRDD(
-                            new Function2<JavaRDD<String>, Time, Void>() {
-                                @Override
-                                public Void call(JavaRDD<String> rdd, Time time) {
+            if (sourceType.equals("Kafka")) {
+                System.out.println("inside source  = " + sourceType);
+                Map<String, String> kafkaParams = KafkaSource.getKafkaParams(pid);
+                Set<String> topics = KafkaSource.getTopics(pid);
+                JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
+                JavaDStream<String> msgDataStream = directKafkaStream.map(new Function<Tuple2<String, String>, String>() {
+                    @Override
+                    public String call(Tuple2<String, String> tuple2) {
+                        return tuple2._2();
+                    }
+                });
+                msgDataStream.foreachRDD(
+                        new Function2<JavaRDD<String>, Time, Void>() {
+                            @Override
+                            public Void call(JavaRDD<String> rdd, Time time) {
+                                sourcePid = pid;
+                                System.out.println("sourcePid at beginning of source= " + sourcePid);
+                                // Get the singleton instance of SparkSession
+                                SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
+                                // Convert RDD[String] to RDD[Row] to DataFrame
+                                JavaRDD<Row> rowRDD = rdd.map(new Function<String, Row>() {
+                                                                  @Override
+                                                                  public Row call(String record) {
+                                                                      System.out.println("Inside message handler,sourcePid = " + pid);
+                                                                      Object[] attributes = new Object[]{};
+                                                                      //TODO: fetch messageType from sourcePid variable
+                                                                      String messageType = broadcastVar.value().get(pid);
+                                                                      //String messageType = pidMessageTypeMap.get(pid);
+                                                                      //String messageType = "ApacheLog";
+                                                                      //TODO: Add logic to handle other message types like delimited, etc..
+                                                                      if (messageType.equals("ApacheLog")) {
+                                                                          attributes = new ApacheLogRegexParser().parseRecord(record, pid);
+                                                                      } else if (messageType.equals("Delimited")) {
+                                                                          attributes = new DelimitedTextParser().parseRecord(record, pid);
+                                                                      }
+                                                                      return RowFactory.create(attributes);
+                                                                  }
+                                                              }
+                                );
+                                SchemaReader schemaReader = new SchemaReader();
+                                StructType schema = schemaReader.generateSchema(pid);
+                                DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
+                                //dataFrame.show();
+                                pidDataFrameMap.put(pid, dataFrame);
+                                System.out.println("pidDataFrameMap = " + pidDataFrameMap);
+                                transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
+                                return null;
+                            }
+                        });
 
-                                    // Get the singleton instance of SparkSession
-                                    SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
-
-                                    // Convert RDD[String] to RDD[Row] to DataFrame
-                                    JavaRDD<Row> rowRDD = rdd.map(new MessageTypeHandler());
-                                    SchemaReader schemaReader = new SchemaReader();
-                                    StructType schema = schemaReader.generateSchema(pid);
-                                    DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
-                                    //dataFrame.show();
-                                    pidDataFrameMap.put(pid, dataFrame);
-                                    System.out.println("pidDataFrameMap = " + pidDataFrameMap);
-                                    transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
-                                    return null;
-                                }
-                            });
-
-                }
-                //TODO: Add logic to handle other Source Types
             }
+            //TODO: Add logic to handle other Source Types
+        }
     }
 
     public void transformAndEmit(String nextPidString, Map<Integer, DataFrame> pidDataFrameMap) {
@@ -201,15 +231,15 @@ public class StreamAnalyticsDriver implements Serializable {
                 //cast String to Integer
                 nextPidInts[i] = Integer.parseInt(nextPidStringArray[i]);
                 System.out.println("nextPidInts[i] = " + nextPidInts[i]);
-                if(nextPidInts[i].equals(parentProcessId)){
+                if (nextPidInts[i].equals(parentProcessId)) {
                     countEmitterCovered++;
-                    System.out.println("No.of Emitters covered ="+countEmitterCovered);
-                    if(countEmitterCovered>=listOfEmitters.size()) {
+                    System.out.println("No.of Emitters covered =" + countEmitterCovered);
+                    if (countEmitterCovered >= listOfEmitters.size()) {
                         System.out.println("clearing contents of pidDataFrameMap before clearing= " + pidDataFrameMap);
                         pidDataFrameMap.clear();
                         System.out.println("clearing contents of pidDataFrameMap before clearing= " + pidDataFrameMap);
-                        System.out.println("resetting countEmitterCovered" );
-                        countEmitterCovered=0;
+                        System.out.println("resetting countEmitterCovered");
+                        countEmitterCovered = 0;
                         return;
                     }
                 }
@@ -230,10 +260,10 @@ public class StreamAnalyticsDriver implements Serializable {
                         //obtain list of corresponding prevDataFrames for all prevPids
                         DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
 
-                        String transformationType = "join";
-                        if (transformationType.equals("join")) {
-                            Join join = new Join();
-                            DataFrame dataFramePostTransformation = join.transform(pidDataFrameMap, prevMap, pid);
+                        String transformationType = "union";
+                        if (transformationType.equals("union")) {
+                            Union union = new Union();
+                            DataFrame dataFramePostTransformation = union.transform(pidDataFrameMap, prevMap, pid);
                             pidDataFrameMap.put(pid, dataFramePostTransformation);
                         }
                         //this transformation involves multiple upstream dataframes, e.g: join or union etc.
@@ -255,7 +285,7 @@ public class StreamAnalyticsDriver implements Serializable {
                 if (listOfEmitters.contains(pid)) {
                     //found emitter node, so get upstream pid and persist based on emitter
                     Set<Integer> prevPids = prevMap.get(pid);
-                    int count=0;
+                    int count = 0;
                     for (Integer prevPid : prevPids) {
                         count++;
                         System.out.println("count = " + count);
@@ -275,31 +305,8 @@ public class StreamAnalyticsDriver implements Serializable {
                 transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
             }
         }
-        /*else{
-            pidDataFrameMap.clear();
-        }*/
-    }
 
-    class FlattenKafkaMessage implements Function<Tuple2<String, String>, String> {
-        @Override
-        public String call(Tuple2<String, String> tuple2) {
-            return tuple2._2();
-        }
     }
-
-    class MessageTypeHandler implements Function<String, Row> {
-        @Override
-        public Row call(String record) {
-            Object[] attributes = new Object[]{};
-            //TODO: Add logic to handle other message types like delimited, etc..
-            String messageType = "ApacheLog";
-            if (messageType.equals("ApacheLog")) {
-                attributes = new ApacheLogRegexParser().parseRecord(record);
-            }
-            return RowFactory.create(attributes);
-        }
-    }
-
 
 }
 

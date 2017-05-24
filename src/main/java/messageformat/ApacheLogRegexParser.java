@@ -17,7 +17,8 @@ public class ApacheLogRegexParser implements MessageParser{
     private static final Pattern PATTERN = Pattern.compile(LOG_ENTRY_PATTERN);
 
     @Override
-    public String[] parseRecord(String record) {
+    public String[] parseRecord(String record,Integer pid) {
+        System.out.println("pid inside apache log parser = " + pid);
         Matcher m = PATTERN.matcher(record);
         if (!m.find()) {
             logger.log(Level.ALL, "Cannot parse logline" + record);

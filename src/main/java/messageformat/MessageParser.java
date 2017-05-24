@@ -5,6 +5,6 @@ package messageformat;
  */
 public interface MessageParser<MessageType> {
 
-    public Object[] parseRecord(String line);
+    public Object[] parseRecord(String line,Integer sourcePid);
 
 }
