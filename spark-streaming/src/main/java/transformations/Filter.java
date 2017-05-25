@@ -4,10 +4,7 @@ import com.wipro.ats.bdre.md.api.GetProperties;
 import com.wipro.ats.bdre.md.beans.GetPropertiesInfo;
 import org.apache.spark.sql.DataFrame;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by cloudera on 5/21/17.
@@ -23,33 +20,34 @@ public class Filter implements Transformation {
         DataFrame prevDataFrame = prevDataFrameMap.get(prevPid);
         DataFrame filteredDF =null;
         GetProperties getProperties=new GetProperties();
-        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(pid.toString(),"kafka");
+
+        Properties filterProperties=  getProperties.getProperties(String.valueOf(pid),"kafka");
         String check="";
         String filterValue=new String();
         String colName=new String();
-        for(GetPropertiesInfo getPropertiesInfo:propertiesInfoList)
-        {
-            if(getPropertiesInfo.getKey().equals("operator"))
-            {
-                check=getPropertiesInfo.getValue();
+        check = filterProperties.getProperty("operator");
+        System.out.println("operator = " + check);
+        filterValue = filterProperties.getProperty("filtervalue");
+        System.out.println("filtervalue = " + filterValue);
+        colName = filterProperties.getProperty("column");
+        System.out.println("colName = " + colName);
+        if(prevDataFrame!=null && !prevDataFrame.rdd().isEmpty()){
+            if (check.equals("equals")) {
+                System.out.println("showing dataframe before filter ");
+                prevDataFrame.show(100);
+                filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).equalTo(filterValue));
+                filteredDF.show(100);
+                System.out.println("showing dataframe after filter ");
             }
-            if(getPropertiesInfo.getKey().equals("filtervalue"))
-            {
-                filterValue= getPropertiesInfo.getValue();
-            }
-            if(getPropertiesInfo.getKey().equals("column"))
-            {
-                colName= getPropertiesInfo.getValue();
+            else {
+                System.out.println("showing dataframe before filter ");
+                prevDataFrame.show(100);
+                filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).gt(filterValue));
+                filteredDF.show(100);
+                System.out.println("showing dataframe after filter ");
             }
         }
 
-        if(prevDataFrame!=null){
-            if (check.equals("equals"))
-                filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).equalTo(filterValue));
-            else
-            filteredDF = prevDataFrame.filter(prevDataFrame.col(colName).gt(filterValue));
-        }
-        filteredDF.show();
         return filteredDF;
     }
 }

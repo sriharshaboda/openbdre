@@ -260,8 +260,11 @@ public class ProcessDAO {
     }
 
     public String getProcessTypeName(Integer pid){
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
         Process process = get(pid);
-        return process.getProcessType().getProcessTypeName();
+        ProcessType processType = (ProcessType) session.get(ProcessType.class,process.getProcessType().getProcessTypeId());
+        return processType.getProcessTypeName();
 
     }
 

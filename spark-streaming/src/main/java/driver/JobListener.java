@@ -3,6 +3,7 @@ import org.apache.spark.streaming.scheduler.*;
 
 public class JobListener implements StreamingListener {
 
+    public static String pidMap="";
     @Override
     public void onBatchCompleted(StreamingListenerBatchCompleted batchCompleted) {
 

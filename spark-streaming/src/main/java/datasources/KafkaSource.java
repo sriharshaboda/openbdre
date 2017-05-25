@@ -11,32 +11,31 @@ import java.util.*;
 public class KafkaSource {
 
     Map<String,String> kafkaParams;
-    static Set<String> topics = new HashSet<>();
-    static String topicName=new String();
+    Set<String> topics = new HashSet<>();
+    String topicName=new String();
 
     //TODO fetch props from DB
-    public static Map<String,String> getKafkaParams(int pid){
+    public Map<String,String> getKafkaParams(int pid){
         GetProperties getProperties=new GetProperties();
         Map<String,String> kafkaParams = new  HashMap<String,String>();
-        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(String.valueOf(pid),"kafka");
-        for(GetPropertiesInfo getPropertiesInfo:propertiesInfoList)
-        {
-            if (!getPropertiesInfo.getValue().equals(""))
-                kafkaParams.put(getPropertiesInfo.getKey(),getPropertiesInfo.getValue());
+       // List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(String.valueOf(pid),"kafka");
+        Properties kafkaProperties=  getProperties.getProperties(String.valueOf(pid),"kafka");
+        Enumeration e = kafkaProperties.propertyNames();
+        if (!kafkaProperties.isEmpty()) {
+            while (e.hasMoreElements()) {
+                String key = (String) e.nextElement();
+                kafkaParams.put(key,kafkaProperties.getProperty(key));
+            }
         }
+
         kafkaParams.put("metadata.broker.list", "localhost:9092");
         return kafkaParams;
     }
 
-    public static Set<String> getTopics(int pid){
+    public Set<String> getTopics(int pid){
         GetProperties getProperties=new GetProperties();
-        Map<String,String> kafkaParams = new  HashMap<String,String>();
-        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(String.valueOf(pid),"kafka");
-        for(GetPropertiesInfo getPropertiesInfo:propertiesInfoList)
-        {
-            if (getPropertiesInfo.getKey().equals("Topic Name"))
-                topicName=getPropertiesInfo.getValue();
-        }
+        Properties kafkaProperties=  getProperties.getProperties(String.valueOf(pid),"kafka");
+        topicName = kafkaProperties.getProperty("Topic Name");
         String[] topicArray = topicName.split(",");
         for(int i=0;i<topicArray.length;i++){
             System.out.println("topic = " + topicArray[i]);

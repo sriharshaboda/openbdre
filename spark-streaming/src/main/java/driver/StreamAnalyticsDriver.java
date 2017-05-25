@@ -3,6 +3,7 @@ package driver;
 import com.wipro.ats.bdre.GetParentProcessType;
 import com.wipro.ats.bdre.md.api.GetProcess;
 import com.wipro.ats.bdre.md.api.GetProperties;
+import com.wipro.ats.bdre.md.api.StreamingMessagesAPI;
 import com.wipro.ats.bdre.md.beans.GetPropertiesInfo;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
 import com.wipro.ats.bdre.md.dao.MessagesDAO;
@@ -14,6 +15,7 @@ import messageformat.RegexParser;
 import messageformat.DelimitedTextParser;
 import messageschema.SchemaReader;
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -44,18 +46,19 @@ import java.util.*;
  * Created by cloudera on 5/18/17.
  */
 public class StreamAnalyticsDriver implements Serializable {
-    @Autowired
-   static MessagesDAO messagesDAO;
 
+    public static final Logger LOGGER = Logger.getLogger(StreamAnalyticsDriver.class);
     public static Map<Integer, Set<Integer>> prevMap = new HashMap<>();
-    public Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
     public static List<Integer> listOfSourcePids = new ArrayList<>();
     public static List<Integer> listOfTransformations = new ArrayList<>();
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
     public static Map<Integer,String> pidMessageTypeMap = new HashedMap();
-    public static Integer parentProcessId = new Integer(151);
+    public static Integer parentProcessId;
     static int countEmitterCovered = 0;
+    static Time batchStartTime = new Time(0);
+    static Map<Integer,JavaPairInputDStream<String, String>> pidPairDStreamMap= new HashMap<>();
+    public Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
     Integer sourcePid = 0;
 
     public static void main(String[] args) {
@@ -75,16 +78,24 @@ public class StreamAnalyticsDriver implements Serializable {
 
 
                 GetProperties getProperties=new GetProperties();
-                List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
+             /*   List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
                 if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
                 {
                     String messageName=propertiesInfoList.get(0).getValue();
                     Messages messages=messagesDAO.get(messageName);
                     pidMessageTypeMap.put(processInfo.getProcessId(),messages.getFormat());
                 }
+                */
+
+                Properties properties=  getProperties.getProperties(processInfo.getProcessId().toString(),"message");
+                String messageName = properties.getProperty("messageName");
+                LOGGER.info("messagename is "+messageName);
+                StreamingMessagesAPI streamingMessagesAPI = new StreamingMessagesAPI();
+                Messages messages=streamingMessagesAPI.getMessage(messageName);
+                pidMessageTypeMap.put(processInfo.getProcessId(),messages.getFormat());
 
             }
-             if(processTypeName.contains("operator"))
+            if(processTypeName.contains("operator"))
             {
                 listOfTransformations.add(processInfo.getProcessId());
             }
@@ -106,12 +117,16 @@ public class StreamAnalyticsDriver implements Serializable {
         JavaSparkContext sc = new JavaSparkContext(conf);
         Broadcast<Map<Integer,String>> broadcastVar = sc.broadcast(pidMessageTypeMap);
 
+        long batchDuration = 10000;
+
         //TODO: Fetch batchDuration property from database
         GetProperties getProperties=new GetProperties();
-        List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"batchDuration");
-        long batchDuration = 10000;
-          if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
-             batchDuration = Long.parseLong(propertiesInfoList.get(0).getValue());
+        //List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"batchDuration");
+        Properties properties=  getProperties.getProperties(parentProcessId.toString(),"batchDuration");
+        //TODO get batchduration properties from parent process
+        if(properties.getProperty("batchDuration") != null)
+            batchDuration = Long.valueOf(properties.getProperty("batchDuration"));
+
 
 
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
@@ -121,15 +136,29 @@ public class StreamAnalyticsDriver implements Serializable {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
 
             System.out.println("prevMap = " + prevMap);
-            streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap);
+            streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap,parentProcessId);
         }
+        streamAnalyticsDriver.createDStreams(ssc,listOfSourcePids);
         streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap,broadcastVar);
         ssc.addStreamingListener(new JobListener());
         ssc.start();
         ssc.awaitTermination();
     }
+    public void createDStreams(JavaStreamingContext ssc,List<Integer> listOfSourcePids){
+        for (Integer pid : listOfSourcePids) {
+            String sourceType = "Kafka";
+            if (sourceType.equals("Kafka")) {
+                KafkaSource kafkaSource = new KafkaSource();
+                Map<String, String> kafkaParams = kafkaSource.getKafkaParams(pid);
+                Set<String> topics = kafkaSource.getTopics(pid);
+                System.out.println("topics = " + topics);
+                final JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
+                pidPairDStreamMap.put(pid,directKafkaStream);
+            }
+        }
+    }
 
-    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer, String> nextPidMap) {
+    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer, String> nextPidMap,Integer parentProcessId) {
         //prevMapTemp holds the prev ids only for pids involved in current iteration
         Map<Integer, Set<Integer>> prevMapTemp = new HashMap<>();
         for (Integer currentPid : currentUpstreamList) {
@@ -171,74 +200,71 @@ public class StreamAnalyticsDriver implements Serializable {
     public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap, Broadcast<Map<Integer,String>> broadcastVar) {
         System.out.println("prevMap = " + prevMap);
         //iterate through each source and create respective dataFrames for sources
-        for (Integer pid : listOfSourcePids) {
+        for (Integer pid : pidPairDStreamMap.keySet()) {
             System.out.println("pid = " + pid);
-            System.out.println("Creating DStream for source pid= " + pid);
-            //Found Source node, need to create DStream and cast to Dataframe
-            //Fetch Source Stream Type & Source Message Type from DB
-            String sourceType = "Kafka";
-
-            if (sourceType.equals("Kafka")) {
-                System.out.println("inside source  = " + sourceType);
-                Map<String, String> kafkaParams = KafkaSource.getKafkaParams(pid);
-                Set<String> topics = KafkaSource.getTopics(pid);
-                JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
-                JavaDStream<String> msgDataStream = directKafkaStream.map(new Function<Tuple2<String, String>, String>() {
-                    @Override
-                    public String call(Tuple2<String, String> tuple2) {
-                        return tuple2._2();
-                    }
-                });
-                msgDataStream.foreachRDD(
-                        new Function2<JavaRDD<String>, Time, Void>() {
-                            @Override
-                            public Void call(JavaRDD<String> rdd, Time time) {
-                                sourcePid = pid;
-                                System.out.println("sourcePid at beginning of source= " + sourcePid);
-                                // Get the singleton instance of SparkSession
-                                SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
-                                // Convert RDD[String] to RDD[Row] to DataFrame
-                                JavaRDD<Row> rowRDD = rdd.map(new Function<String, Row>() {
-                              @Override
-                              public Row call(String record) {
-                                  System.out.println("Inside message handler,sourcePid = " + pid);
-                                  Object[] attributes = new Object[]{};
-                                  //TODO: fetch messageType from sourcePid variable
-                                  String messageType="";
-                                  GetProperties getProperties=new GetProperties();
-                                  List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
-                                  if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
-                                  {
-                                      String messageName=propertiesInfoList.get(0).getValue();
-                                      Messages messages=messagesDAO.get(messageName);
-                                      messageType=messages.getFormat();
-                                  }
-
-                                  //String messageType = broadcastVar.value().get(pid);
-                                  //String messageType = pidMessageTypeMap.get(pid);
-                                  //String messageType = "Regex";
-                                  //TODO: Add logic to handle other message types like delimited, etc..
-                                  if (messageType.equals("Regex")) {
-                                      attributes = new RegexParser().parseRecord(record, pid);
-                                  } else if (messageType.equals("Delimited")) {
-                                      attributes = new DelimitedTextParser().parseRecord(record, pid);
-                                  }
-                                  return RowFactory.create(attributes);
-                              }
-                          }
-                                );
-                                SchemaReader schemaReader = new SchemaReader();
-                                StructType schema = schemaReader.generateSchema(pid);
-                                DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
-                                //dataFrame.show();
-                                pidDataFrameMap.put(pid, dataFrame);
-                                System.out.println("pidDataFrameMap = " + pidDataFrameMap);
-                                transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
-                                return null;
+            System.out.println("FetchingDStream for source pid= " + pid);
+            JavaDStream<String> msgDataStream = pidPairDStreamMap.get(pid).map(new Function<Tuple2<String, String>, String>() {
+                @Override
+                public String call(Tuple2<String, String> tuple2) {
+                    System.out.println("count pid = " + pid+ " tuple2._2()"+tuple2._2());
+                    return tuple2._2();
+                }
+            });
+            msgDataStream.foreachRDD(
+                    new Function2<JavaRDD<String>, Time, Void>() {
+                        @Override
+                        public Void call(JavaRDD<String> rdd, Time time) {
+                            System.out.println("rdd.count() for pid "+pid +"= "+ rdd.count());
+                            sourcePid = pid;
+                            System.out.println("time at the start = " + time+ " sourcePid= "+sourcePid);
+                            if(batchStartTime.$less(time)){
+                                pidDataFrameMap = new HashMap<Integer, DataFrame>();
+                                batchStartTime=time;
                             }
-                        });
+                            // Get the singleton instance of SparkSession
+                            SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
+                            // Convert RDD[String] to RDD[Row] to DataFrame
+                            JavaRDD<Row> rowRDD = rdd.map(new Function<String, Row>() {
+                                                              @Override
+                                                              public Row call(String record) {
+                                                                  System.out.println("Inside message handler,sourcePid = " + pid);
+                                                                  Object[] attributes = new Object[]{};
+                                                                  //TODO: fetch messageType from sourcePid variable
+                                                                  String messageType="";
+                                                                  GetProperties getProperties=new GetProperties();
+                                                                  Properties properties=  getProperties.getProperties(pid.toString(),"message");
+                                                                  String messageName = properties.getProperty("messageName");
 
-            }
+                                                                  StreamingMessagesAPI streamingMessagesAPI = new StreamingMessagesAPI();
+                                                                  Messages messages=streamingMessagesAPI.getMessage(messageName);
+                                                                  messageType=messages.getFormat();
+
+
+                                                                  //String messageType = broadcastVar.value().get(pid);
+                                                                  //String messageType = pidMessageTypeMap.get(pid);
+                                                                  //String messageType = "Regex";
+                                                                  //TODO: Add logic to handle other message types like delimited, etc..
+                                                                  if (messageType.equals("Regex")) {
+                                                                      attributes = new RegexParser().parseRecord(record, pid);
+                                                                  } else if (messageType.equals("Delimited")) {
+                                                                      attributes = new DelimitedTextParser().parseRecord(record, pid);
+                                                                  }
+                                                                  return RowFactory.create(attributes);
+                                                              }
+                                                          }
+                            );
+                            SchemaReader schemaReader = new SchemaReader();
+                            StructType schema = schemaReader.generateSchema(pid);
+                            DataFrame dataFrame = sqlContext.createDataFrame(rowRDD, schema);
+                            //dataFrame.show();
+                            pidDataFrameMap.put(pid, dataFrame);
+                            System.out.println("pidDataFrameMap = " + pidDataFrameMap);
+                            transformAndEmit(nextPidMap.get(pid), pidDataFrameMap);
+                            return null;
+                        }
+                    });
+
+            //}
             //TODO: Add logic to handle other Source Types
         }
     }
@@ -275,6 +301,8 @@ public class StreamAnalyticsDriver implements Serializable {
             }
             for (Integer pid : nextPidInts) {
                 System.out.println("pid for transformation or emitter= " + pid);
+                if(pidDataFrameMap.get(pid)!=null)
+                    pidDataFrameMap.get(pid).show(100);
                 if (listOfTransformations.contains(pid)) {
                     //this pid is of type transformation, find prev pids to output the appropriate dataframe
                     Set<Integer> prevPids = prevMap.get(pid);
