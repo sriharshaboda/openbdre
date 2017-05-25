@@ -53,6 +53,7 @@ angular.module('app', ['flowChart', ])
         $scope.destination_processTypes={};
         $scope.chartViewModel={};
         $scope.newMessagesList = {};
+
         //
         // Event handler for key-down on the flowchart.
         //
@@ -273,10 +274,12 @@ angular.module('app', ['flowChart', ])
               if(nodeTypeId==42)
                    nodename='Kafka';
                if(nodeTypeId==43)
-                  nodename='count';
+                  nodename='Filter';
               if(nodeTypeId==44)
                 nodename='HDFS';
-                console.log("node name is "+nodename+" parentPid is "+parentPid);
+              if(nodeTypeId==45)
+                nodename='Union';
+                console.log("node name is "+nodename+" parentPid is "+parentPid +"parentType" +parentType+"nodeTypeId "+nodeTypeId);
 
             if(parentType==41)
             {

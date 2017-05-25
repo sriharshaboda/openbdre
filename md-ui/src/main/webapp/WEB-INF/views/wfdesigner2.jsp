@@ -381,8 +381,16 @@
 
                                                    <div class="form-group">
                                                       <label class="control-label col-sm-2" for="{{genConfig.key}}-propkey">column</label>
-                                                      <select class="form-control" id="column" ng-click="fetchMessageColumns(chartViewModel.selectedProcess.processId)" >
-                                                          <option ng-repeat="column in messageColumnNames" id="{{$index}}" value="{{ column.Value }}">{{ column.DisplayText }}</option>
+                                                      <select class="form-control" id="column" >
+                                                          <option id="{{$index}}" value="IP">IP</option>
+                                                          <option id="{{$index}}" value="client">client</option>
+                                                          <option id="{{$index}}" value="date">date</option>
+                                                          <option id="{{$index}}" value="user">user</option>
+                                                          <option id="{{$index}}" value="method">method</option>
+                                                          <option id="{{$index}}" value="req">req</option>
+                                                          <option id="{{$index}}" value="proto">proto</option>
+                                                          <option id="{{$index}}" value="respcode">respcode</option>
+                                                          <option id="{{$index}}" value="size">size</option>
                                                       </select>
                                                   </div>
 

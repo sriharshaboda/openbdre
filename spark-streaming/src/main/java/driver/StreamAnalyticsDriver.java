@@ -54,15 +54,16 @@ public class StreamAnalyticsDriver implements Serializable {
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
     public static Map<Integer,String> pidMessageTypeMap = new HashedMap();
-
     public static Integer parentProcessId = new Integer(151);
     static int countEmitterCovered = 0;
     Integer sourcePid = 0;
 
     public static void main(String[] args) {
         Integer parentProcessId = Integer.parseInt(args[0]);
+        String username = (args[1]);
         GetProcess getProcess = new GetProcess();
-        List<ProcessInfo> subProcessList = getProcess.execute(args);
+        String[] processDetailsArgs = new String[]{"-p",args[0],"-u",username};
+        List<ProcessInfo> subProcessList = getProcess.execute(processDetailsArgs);
         for(ProcessInfo processInfo:subProcessList)
         {
             nextPidMap.put(processInfo.getProcessId(),processInfo.getNextProcessIds());

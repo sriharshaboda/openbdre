@@ -36,7 +36,7 @@
 '40', 'param', 'Parameters', 'Parameters', 1, 'true', 'text', 1
 '41','param','Parameters','Additional parameters', 1,'true','text', 1
 '43','Filter Options','Filter Options','Filter Options', 1,'true','filter', 1
-
+'44','hdfs','hdfs','hdfs',1,'true','hdfs',1
 '42','kafka','kafka properties','kafka', 1,'true','kafka', 1
 'default_val.15','password_enabled','credential','Credentials for authentication', 1,'true','text', 1
 'default_val.5','password_enabled','credential','Credentials for authentication', 1,'true','text', 1

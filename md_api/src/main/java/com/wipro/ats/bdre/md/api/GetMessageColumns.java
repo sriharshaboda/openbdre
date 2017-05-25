@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import javax.persistence.criteria.CriteriaBuilder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by cloudera on 5/22/17.
@@ -33,7 +30,7 @@ public class GetMessageColumns extends MetadataAPIBase {
         acbFactory.autowireBean(this);
 
     }
-    public static Map<Integer,List<Integer>> prevMap = new HashMap();
+    public static Map<Integer,Set<Integer>> prevMap = new HashMap();
     public static List<Integer> listOfSourcePids = new ArrayList();
     public static List<Integer> listOfTransformations = new ArrayList();
     public static List<Integer> listOfEmitters = new ArrayList();
@@ -68,11 +65,11 @@ public class GetMessageColumns extends MetadataAPIBase {
             prevMap.put(sourcePid, null);
         }
 
-        while (currentUpstreamList.size() != 1 || !currentUpstreamList.contains(parentProcessId)) {
+        while (!currentUpstreamList.isEmpty()) {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
             GetMessageColumns getMessageColumns = new GetMessageColumns();
             System.out.println(" calling identifyflows");
-            getMessageColumns.identifyFlows(currentUpstreamList, nextPidMap);
+            getMessageColumns.identifyFlows(currentUpstreamList, nextPidMap,parentProcessId);
         }
         System.out.println("prevMap = " + prevMap);
 
@@ -96,7 +93,7 @@ public class GetMessageColumns extends MetadataAPIBase {
     }
 
     public List<Integer> recursivelyGetSources(Integer pid){
-        List<Integer> prevPIds = prevMap.get(pid);
+        Set<Integer> prevPIds = prevMap.get(pid);
         System.out.println("prevPIds = " + prevPIds);
         if(prevPIds == null){
 
@@ -113,9 +110,9 @@ public class GetMessageColumns extends MetadataAPIBase {
         return listOfSourcesForGivenPid;
     }
 
-    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer,String> nextPidMap){
+    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer,String> nextPidMap, Integer parentProcessId){
         //prevMapTemp holds the prev ids only for pids involved in current iteration
-        Map<Integer,List<Integer>> prevMapTemp = new HashMap();
+        Map<Integer,Set<Integer>> prevMapTemp = new HashMap();
         for(Integer currentPid:currentUpstreamList){
 
             String nextPidString = nextPidMap.get(currentPid);
@@ -133,16 +130,23 @@ public class GetMessageColumns extends MetadataAPIBase {
             }
         }
 
+       /* //update the currentUpstreamList with the keys of the prevMap i.e all unique next ids of current step will be upstreams of following iteration
+        currentUpstreamList.clear();
+        currentUpstreamList.addAll(prevMapTemp.keySet());
+*/
         //update the currentUpstreamList with the keys of the prevMap i.e all unique next ids of current step will be upstreams of following iteration
         currentUpstreamList.clear();
+        //if the set contains parentProcessId, remove it
+        if (prevMapTemp.containsKey(parentProcessId))
+            prevMapTemp.remove(parentProcessId);
         currentUpstreamList.addAll(prevMapTemp.keySet());
     }
 
     //method to add previous pids as values to list against given process-id as key
-    public void add(Integer key, Integer newValue, Map<Integer,List<Integer>> prevMap) {
-        List<Integer> currentValue = prevMap.get(key);
+    public void add(Integer key, Integer newValue, Map<Integer,Set<Integer>> prevMap) {
+        Set<Integer> currentValue = prevMap.get(key);
         if (currentValue == null) {
-            currentValue = new ArrayList();
+            currentValue = new HashSet<>();
             prevMap.put(key, currentValue);
         }
         currentValue.add(newValue);
