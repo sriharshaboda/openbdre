@@ -4,15 +4,13 @@ import com.wipro.ats.bdre.GetParentProcessType;
 import com.wipro.ats.bdre.md.api.GetProcess;
 import com.wipro.ats.bdre.md.api.GetProperties;
 import com.wipro.ats.bdre.md.api.StreamingMessagesAPI;
-import com.wipro.ats.bdre.md.beans.GetPropertiesInfo;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
-import com.wipro.ats.bdre.md.dao.MessagesDAO;
 import com.wipro.ats.bdre.md.dao.jpa.Messages;
 import datasources.KafkaSource;
 import emitters.HDFSEmitter;
 import kafka.serializer.StringDecoder;
-import messageformat.RegexParser;
 import messageformat.DelimitedTextParser;
+import messageformat.RegexParser;
 import messageschema.SchemaReader;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
@@ -33,11 +31,9 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import scala.Tuple2;
 import transformations.Filter;
 import transformations.Union;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -53,11 +49,11 @@ public class StreamAnalyticsDriver implements Serializable {
     public static List<Integer> listOfTransformations = new ArrayList<>();
     public static List<Integer> listOfEmitters = new ArrayList<>();
     public static Map<Integer, String> nextPidMap = new HashMap<Integer, String>();
-    public static Map<Integer,String> pidMessageTypeMap = new HashedMap();
+    public static Map<Integer, String> pidMessageTypeMap = new HashedMap();
     public static Integer parentProcessId;
     static int countEmitterCovered = 0;
     static Time batchStartTime = new Time(0);
-    static Map<Integer,JavaPairInputDStream<String, String>> pidPairDStreamMap= new HashMap<>();
+    static Map<Integer, JavaPairInputDStream<String, String>> pidPairDStreamMap = new HashMap<>();
     public Map<Integer, DataFrame> pidDataFrameMap = new HashedMap();
     Integer sourcePid = 0;
 
@@ -65,42 +61,29 @@ public class StreamAnalyticsDriver implements Serializable {
         Integer parentProcessId = Integer.parseInt(args[0]);
         String username = (args[1]);
         GetProcess getProcess = new GetProcess();
-        String[] processDetailsArgs = new String[]{"-p",args[0],"-u",username};
+        String[] processDetailsArgs = new String[]{"-p", args[0], "-u", username};
         List<ProcessInfo> subProcessList = getProcess.execute(processDetailsArgs);
-        for(ProcessInfo processInfo:subProcessList)
-        {
-            nextPidMap.put(processInfo.getProcessId(),processInfo.getNextProcessIds());
-            GetParentProcessType getParentProcessType=new GetParentProcessType();
-            String processTypeName=getParentProcessType.processTypeName(processInfo.getProcessId());
-            if(processTypeName.contains("source"))
-            {
+        for (ProcessInfo processInfo : subProcessList) {
+            nextPidMap.put(processInfo.getProcessId(), processInfo.getNextProcessIds());
+            GetParentProcessType getParentProcessType = new GetParentProcessType();
+            String processTypeName = getParentProcessType.processTypeName(processInfo.getProcessId());
+            if (processTypeName.contains("source")) {
                 listOfSourcePids.add(processInfo.getProcessId());
 
 
-                GetProperties getProperties=new GetProperties();
-             /*   List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"message");
-                if (propertiesInfoList!=null && propertiesInfoList.get(0)!=null)
-                {
-                    String messageName=propertiesInfoList.get(0).getValue();
-                    Messages messages=messagesDAO.get(messageName);
-                    pidMessageTypeMap.put(processInfo.getProcessId(),messages.getFormat());
-                }
-                */
-
-                Properties properties=  getProperties.getProperties(processInfo.getProcessId().toString(),"message");
+                GetProperties getProperties = new GetProperties();
+                Properties properties = getProperties.getProperties(processInfo.getProcessId().toString(), "message");
                 String messageName = properties.getProperty("messageName");
-                LOGGER.info("messagename is "+messageName);
+                LOGGER.info("messagename is " + messageName);
                 StreamingMessagesAPI streamingMessagesAPI = new StreamingMessagesAPI();
-                Messages messages=streamingMessagesAPI.getMessage(messageName);
-                pidMessageTypeMap.put(processInfo.getProcessId(),messages.getFormat());
+                Messages messages = streamingMessagesAPI.getMessage(messageName);
+                pidMessageTypeMap.put(processInfo.getProcessId(), messages.getFormat());
 
             }
-            if(processTypeName.contains("operator"))
-            {
+            if (processTypeName.contains("operator")) {
                 listOfTransformations.add(processInfo.getProcessId());
             }
-            if(processTypeName.contains("destination"))
-            {
+            if (processTypeName.contains("destination")) {
                 listOfEmitters.add(processInfo.getProcessId());
             }
 
@@ -115,18 +98,17 @@ public class StreamAnalyticsDriver implements Serializable {
         // Create a Spark Context.
         SparkConf conf = new SparkConf().setAppName("Log Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
-        Broadcast<Map<Integer,String>> broadcastVar = sc.broadcast(pidMessageTypeMap);
+        Broadcast<Map<Integer, String>> broadcastVar = sc.broadcast(pidMessageTypeMap);
 
-        long batchDuration = 10000;
+        long batchDuration = 30000;
 
         //TODO: Fetch batchDuration property from database
-        GetProperties getProperties=new GetProperties();
+        GetProperties getProperties = new GetProperties();
         //List<GetPropertiesInfo> propertiesInfoList= (List<GetPropertiesInfo>) getProperties.getProperties(parentProcessId.toString(),"batchDuration");
-        Properties properties=  getProperties.getProperties(parentProcessId.toString(),"batchDuration");
+        Properties properties = getProperties.getProperties(parentProcessId.toString(), "batchDuration");
         //TODO get batchduration properties from parent process
-        if(properties.getProperty("batchDuration") != null)
+        if (properties.getProperty("batchDuration") != null)
             batchDuration = Long.valueOf(properties.getProperty("batchDuration"));
-
 
 
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
@@ -136,15 +118,16 @@ public class StreamAnalyticsDriver implements Serializable {
             System.out.println("currentUpstreamList = " + currentUpstreamList);
 
             System.out.println("prevMap = " + prevMap);
-            streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap,parentProcessId);
+            streamAnalyticsDriver.identifyFlows(currentUpstreamList, nextPidMap, parentProcessId);
         }
-        streamAnalyticsDriver.createDStreams(ssc,listOfSourcePids);
-        streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap,broadcastVar);
+        streamAnalyticsDriver.createDStreams(ssc, listOfSourcePids);
+        streamAnalyticsDriver.createDataFrames(ssc, listOfSourcePids, prevMap, nextPidMap, broadcastVar);
         ssc.addStreamingListener(new JobListener());
         ssc.start();
         ssc.awaitTermination();
     }
-    public void createDStreams(JavaStreamingContext ssc,List<Integer> listOfSourcePids){
+
+    public void createDStreams(JavaStreamingContext ssc, List<Integer> listOfSourcePids) {
         for (Integer pid : listOfSourcePids) {
             String sourceType = "Kafka";
             if (sourceType.equals("Kafka")) {
@@ -153,12 +136,12 @@ public class StreamAnalyticsDriver implements Serializable {
                 Set<String> topics = kafkaSource.getTopics(pid);
                 System.out.println("topics = " + topics);
                 final JavaPairInputDStream<String, String> directKafkaStream = KafkaUtils.createDirectStream(ssc, String.class, String.class, StringDecoder.class, StringDecoder.class, kafkaParams, topics);
-                pidPairDStreamMap.put(pid,directKafkaStream);
+                pidPairDStreamMap.put(pid, directKafkaStream);
             }
         }
     }
 
-    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer, String> nextPidMap,Integer parentProcessId) {
+    public void identifyFlows(List<Integer> currentUpstreamList, Map<Integer, String> nextPidMap, Integer parentProcessId) {
         //prevMapTemp holds the prev ids only for pids involved in current iteration
         Map<Integer, Set<Integer>> prevMapTemp = new HashMap<>();
         for (Integer currentPid : currentUpstreamList) {
@@ -197,7 +180,7 @@ public class StreamAnalyticsDriver implements Serializable {
     }
 
     //this method creates dataframes based on the prev map & handles logic accordingly for source/transformation/emitter
-    public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap, Broadcast<Map<Integer,String>> broadcastVar) {
+    public void createDataFrames(JavaStreamingContext ssc, List<Integer> listOfSourcePids, Map<Integer, Set<Integer>> prevMap, Map<Integer, String> nextPidMap, Broadcast<Map<Integer, String>> broadcastVar) {
         System.out.println("prevMap = " + prevMap);
         //iterate through each source and create respective dataFrames for sources
         for (Integer pid : pidPairDStreamMap.keySet()) {
@@ -206,7 +189,7 @@ public class StreamAnalyticsDriver implements Serializable {
             JavaDStream<String> msgDataStream = pidPairDStreamMap.get(pid).map(new Function<Tuple2<String, String>, String>() {
                 @Override
                 public String call(Tuple2<String, String> tuple2) {
-                    System.out.println("count pid = " + pid+ " tuple2._2()"+tuple2._2());
+                    System.out.println("count pid = " + pid + " tuple2._2()" + tuple2._2());
                     return tuple2._2();
                 }
             });
@@ -214,12 +197,12 @@ public class StreamAnalyticsDriver implements Serializable {
                     new Function2<JavaRDD<String>, Time, Void>() {
                         @Override
                         public Void call(JavaRDD<String> rdd, Time time) {
-                            System.out.println("rdd.count() for pid "+pid +"= "+ rdd.count());
+                            System.out.println("rdd.count() for pid " + pid + "= " + rdd.count());
                             sourcePid = pid;
-                            System.out.println("time at the start = " + time+ " sourcePid= "+sourcePid);
-                            if(batchStartTime.$less(time)){
+                            System.out.println("time at the start = " + time + " sourcePid= " + sourcePid);
+                            if (batchStartTime.$less(time)) {
                                 pidDataFrameMap = new HashMap<Integer, DataFrame>();
-                                batchStartTime=time;
+                                batchStartTime = time;
                             }
                             // Get the singleton instance of SparkSession
                             SQLContext sqlContext = SQLContext.getOrCreate(rdd.context());
@@ -230,14 +213,14 @@ public class StreamAnalyticsDriver implements Serializable {
                                                                   System.out.println("Inside message handler,sourcePid = " + pid);
                                                                   Object[] attributes = new Object[]{};
                                                                   //TODO: fetch messageType from sourcePid variable
-                                                                  String messageType="";
-                                                                  GetProperties getProperties=new GetProperties();
-                                                                  Properties properties=  getProperties.getProperties(pid.toString(),"message");
+                                                                  String messageType = "";
+                                                                  GetProperties getProperties = new GetProperties();
+                                                                  Properties properties = getProperties.getProperties(pid.toString(), "message");
                                                                   String messageName = properties.getProperty("messageName");
 
                                                                   StreamingMessagesAPI streamingMessagesAPI = new StreamingMessagesAPI();
-                                                                  Messages messages=streamingMessagesAPI.getMessage(messageName);
-                                                                  messageType=messages.getFormat();
+                                                                  Messages messages = streamingMessagesAPI.getMessage(messageName);
+                                                                  messageType = messages.getFormat();
 
 
                                                                   //String messageType = broadcastVar.value().get(pid);
@@ -301,7 +284,7 @@ public class StreamAnalyticsDriver implements Serializable {
             }
             for (Integer pid : nextPidInts) {
                 System.out.println("pid for transformation or emitter= " + pid);
-                if(pidDataFrameMap.get(pid)!=null)
+                if (pidDataFrameMap.get(pid) != null)
                     pidDataFrameMap.get(pid).show(100);
                 if (listOfTransformations.contains(pid)) {
                     //this pid is of type transformation, find prev pids to output the appropriate dataframe
@@ -309,9 +292,9 @@ public class StreamAnalyticsDriver implements Serializable {
                     if (prevPids.size() > 1) {
                         //obtain list of corresponding prevDataFrames for all prevPids
                         DataFrame[] prevDataFrames = new DataFrame[prevPids.size()];
-                        GetParentProcessType getParentProcessType=new GetParentProcessType();
-                        String processTypeName=getParentProcessType.processTypeName(pid);
-                        String transformationType=processTypeName.replace("operator_","");
+                        GetParentProcessType getParentProcessType = new GetParentProcessType();
+                        String processTypeName = getParentProcessType.processTypeName(pid);
+                        String transformationType = processTypeName.replace("operator_", "");
                         //String transformationType = "union";
                         if (transformationType.equals("union")) {
                             Union union = new Union();
@@ -327,8 +310,8 @@ public class StreamAnalyticsDriver implements Serializable {
                         Integer prevPid = prevPidList.get(0);
                         //TODO: Fetch the transformation type from DB
                         String transformationType = "filter";
-                        GetParentProcessType getParentProcessType=new GetParentProcessType();
-                        transformationType=getParentProcessType.processTypeName(pid).replace("operator_","");
+                        GetParentProcessType getParentProcessType = new GetParentProcessType();
+                        transformationType = getParentProcessType.processTypeName(pid).replace("operator_", "");
                         if (transformationType.equals("filter")) {
                             Filter filter = new Filter();
                             DataFrame dataFramePostTransformation = filter.transform(pidDataFrameMap, prevMap, pid);
