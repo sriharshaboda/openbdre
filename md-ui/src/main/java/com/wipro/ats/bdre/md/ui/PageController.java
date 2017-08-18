@@ -15,8 +15,6 @@ package com.wipro.ats.bdre.md.ui;
 
 import com.wipro.ats.bdre.md.api.GetProcess;
 import com.wipro.ats.bdre.md.beans.ProcessInfo;
-import com.wipro.ats.bdre.wgen.Workflow;
-import com.wipro.ats.bdre.wgen.WorkflowPrinter;
 import org.apache.log4j.Logger;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,44 +45,8 @@ public class PageController {
         return page;
     }
 
-    @RequestMapping(value = "/workflow/{pid}.page", method = RequestMethod.GET)
-    @ResponseBody
-    public String getWorkflowDot(@PathVariable("pid") String pid, java.security.Principal principal) {
-        Workflow workflow=new Workflow();
-        try{
-            List<ProcessInfo> processInfos = new GetProcess().execute(new String[]{PARENTPROCESSID, pid,"--username",principal.getName()});
-             workflow = new WorkflowPrinter().execute(processInfos, WORKFLOWCON + pid);
-        } catch (SecurityException e) {
-            LOGGER.info(e);
-            workflow.setDot(new StringBuilder("not allowed"));
-        }
-        return workflow.getDot().toString();
 
-    }
 
-    @RequestMapping(value = "/details/{pid}/{ieid}.page", method = RequestMethod.GET)
-    @ResponseBody
-    public String getDashboardDot(@PathVariable("pid") String pid, @PathVariable("ieid") String ieid) {
-
-        List<ProcessInfo> processInfos = new GetProcess().execInfo(new String[]{PARENTPROCESSID, pid, "--instance-exec-id", ieid});
-        Workflow workflow = new WorkflowPrinter().execInfo(processInfos, WORKFLOWCON + pid);
-        return workflow.getDot().toString();
-
-    }
-
-    @RequestMapping(value = "/workflowxml/{pid}.page", method = RequestMethod.GET)
-    @ResponseBody
-    public String getWorkflowXML(@PathVariable("pid") String pid,java.security.Principal principal) {
-        Workflow workflow=new Workflow();
-        try{
-        List<ProcessInfo> processInfos = new GetProcess().execute(new String[]{PARENTPROCESSID, pid,"--username",principal.getName()});
-         workflow = new WorkflowPrinter().execute(processInfos, WORKFLOWCON + pid);
-        } catch (SecurityException e) {
-           LOGGER.info(e);
-            workflow.setXml(new StringBuilder("not allowed"));
-        }
-        return workflow.getXml().toString();
-    }
 
     @RequestMapping(value = "/auth/login.page", method = RequestMethod.GET)
     public ModelAndView login(@RequestParam(value = "error", required = false) String error,
