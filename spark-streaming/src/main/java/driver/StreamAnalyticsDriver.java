@@ -71,7 +71,7 @@ public class StreamAnalyticsDriver implements Serializable {
 
     public static void main(String[] args) {
 
-           Integer parentProcessId = Integer.parseInt(args[0]);
+        parentProcessId = Integer.parseInt(args[0]);
         try {
             String username = (args[1]);
             GetProcess getProcess = new GetProcess();
@@ -132,7 +132,7 @@ public class StreamAnalyticsDriver implements Serializable {
                 batchDuration = Long.valueOf(properties.getProperty("batchDuration"));
 
             JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(batchDuration));
-            ssc.checkpoint("hdfs://localhost:8020/user/cloudera/checkpoint2");
+            ssc.checkpoint("/tmp/checkpoint/"+parentProcessId);
             Map<String,Broadcast<HashMap<String,String>>> broadcastMap = new HashMap<String,Broadcast<HashMap<String,String>>>();
 
                 Properties broadcastProperties = getProperties.getProperties(parentProcessId.toString(), "broadcast");
@@ -406,7 +406,10 @@ public class StreamAnalyticsDriver implements Serializable {
                 }
                 for (int i = 0; i < nextPidInts.length; i++) {
                     for (Integer prevPid : prevMap.get(nextPidInts[i])) {
-                        if (transformedDStreamMap.get(prevPid) == null) {
+                        if(listOfPersistentStores.size()==0 && nextPidInts[i].toString().equalsIgnoreCase(parentProcessId.toString())){
+                            return;
+                        }
+                        else if (transformedDStreamMap.get(prevPid) == null) {
                             return;
                         }
                     }

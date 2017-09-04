@@ -1228,7 +1228,8 @@
                                 											modal: true,
                                 											buttons: {
                                 												"OK": function() {
-                                													$(this).dialog("close");
+                                												$('div#Container').jtable('load');
+																$(this).dialog("close");
                                 												}
                                 											}
                                 										}).html('<p><span class="jtable-confirm-message"><spring:message code="process.page.title_process"/>'+' <b>' +data.Record.processId +'</b> '+'<spring:message code="process.page.success_msg"/>'+' <b>' + data.Record.osprocessId + '</b></span></p>');
@@ -1243,6 +1244,7 @@
                                 											modal: true,
                                 											buttons: {
                                 												"OK": function() {
+																	$('div#Container').jtable('load');
                                 													$(this).dialog("close");
                                 												}
                                 											}
@@ -1302,6 +1304,7 @@
                                                                                 modal: true,
                                                                                 buttons: {
                                                                                     "OK": function() {
+											$('div#Container').jtable('load');
                                                                                         $(this).dialog("close");
                                                                                     }
                                                                                 }
@@ -1873,7 +1876,7 @@
                                                                       <div class="form-group" >
                                                                          <label class="control-label col-sm-2" for="executorCores">Executor Cores</label>
                                                                          <div class="col-sm-10">
-                                                                          <input type="text" class="form-control"  id="executorCores" name="executorCores" value="3" required>
+                                                                          <input type="text" class="form-control"  id="executorCores" name="executorCores" value="2" required>
                                                                          </div>
                                                                        </div>
 
@@ -1881,7 +1884,7 @@
                                                                         <div class="form-group" >
                                                                            <label class="control-label col-sm-2" for="executorMemory">Executor Memory</label>
                                                                            <div class="col-sm-10">
-                                                                            <input type="text" class="form-control"  id="executorMemory" name="executorMemory" value="1024" required>
+                                                                            <input type="text" class="form-control"  id="executorMemory" name="executorMemory" value="512" required>
                                                                            </div>
                                                                          </div>
                               <div class="form-group" >
