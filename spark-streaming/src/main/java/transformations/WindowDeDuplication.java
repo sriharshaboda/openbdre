@@ -12,16 +12,20 @@ import org.apache.spark.streaming.api.java.JavaPairDStream;
 import scala.Tuple2;
 import util.WrapperMessage;
 
+import java.util.Date;
+
 /**
  * Created by cloudera on 8/3/17.
  */
 public class WindowDeDuplication  {
 
     public JavaPairDStream<String, WrapperMessage> convertJavaPairDstream(JavaPairDStream<String, WrapperMessage> inputDstream, long duration) {
+        System.out.println("Beginning of WindowDeduplication = " + new Date());
         JavaPairDStream<String,Row> idValueStream = inputDstream.mapValues(s -> s.getRow());
         JavaMapWithStateDStream<String,Row,String,Row> mappedStream= idValueStream.mapWithState(StateSpec.function(new DuplicateChecker()).timeout(new Duration(duration)));
         // Start the computation
         JavaPairDStream<String,WrapperMessage> deduplicatedStream = mappedStream.mapToPair(s -> new Tuple2<String, WrapperMessage>(null,new WrapperMessage(s)));
+        System.out.println("End of WindowDeduplication = " + new Date());
         return deduplicatedStream;
 
     }

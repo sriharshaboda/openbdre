@@ -39,7 +39,7 @@ public class Enricher implements Transformation {
         JavaPairDStream<String, Row> encrichedRowStream = inputRowStream.mapValues(new Function<Row, Row>() {
             @Override
             public Row call(Row row) throws Exception {
-
+                System.out.println("beginning of enricher = " + new Date());
                 int[] indicesOfFieldsToBeEnriched = new int[fieldsToBeEnriched.length];
                 String[] valuesAfterEnriching = new String[fieldsToBeEnriched.length];
                 HashMap<Integer, String> enrichMap = new HashMap<Integer, String>();
@@ -76,6 +76,7 @@ public class Enricher implements Transformation {
                 }
                 Row finalRow = RowFactory.create(attributes); */
               //  Row finalSchemaRow = new GenericRowWithSchema(finalAttributes,schema);
+                System.out.println("End of enricher = " + new Date());
                 return finalRow;
             }
         });

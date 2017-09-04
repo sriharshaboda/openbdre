@@ -20,6 +20,7 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 import util.WrapperMessage;
 
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -28,6 +29,7 @@ import java.util.Properties;
 public class HBaseDeDuplication {
 
     public JavaPairDStream<String, WrapperMessage> convertJavaPairDstream(JavaPairDStream<String, WrapperMessage> businesskeyvaluestream,JavaStreamingContext jssc, String hbaseConnectionName, String hbaseTableName, StructType schema) {
+        System.out.println("Beginning of HBaseDeDuplication = " + new Date());
 
         JavaDStream<String> buskeyStream = businesskeyvaluestream.map(s -> s._1);
 
@@ -51,7 +53,7 @@ public class HBaseDeDuplication {
         JavaPairDStream<String, WrapperMessage> finalNonDuplicateInBatch = businesskeyvaluestream.leftOuterJoin(existingDataInHBase)
                 .filter(tpl -> !tpl._2._2.isPresent())
                 .mapToPair(tpl -> new Tuple2<String, WrapperMessage>(tpl._1, tpl._2._1));
-
+        System.out.println("End of HBaseDeDuplication = " + new Date());
         return finalNonDuplicateInBatch;
     }
 
