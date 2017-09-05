@@ -57,14 +57,14 @@ public class LinkResolution extends Custom{
         List<Integer> prevPidList = new ArrayList<>();
         prevPidList.addAll(prevMap.get(pid));
         System.out.println("prevPidList in custom join= " + prevPidList);
-        JavaPairDStream<String, WrapperMessage> prevDStream =prevDStreamMap.get(prevPidList.get(0));
+        /*JavaPairDStream<String, WrapperMessage> prevDStream =prevDStreamMap.get(prevPidList.get(0));
         prevDStream.foreachRDD(new Function2<JavaPairRDD<String, WrapperMessage>, Time, Void>() {
             @Override
             public Void call(JavaPairRDD<String, WrapperMessage> stringWrapperMessageJavaPairRDD, Time time) throws Exception {
                 System.out.println("Beginning of Link Resolution = " + new Date());
                 return null;
             }
-        });
+        });*/
         MapToPair mapToPair = new MapToPair();
         JavaPairDStream<String,Row> dealDStream = mapToPair.mapToPair(prevDStreamMap.get(prevPidList.get(0)).map(s -> s._2), "Deal.Header.BusinessKey:String").mapValues(s -> s.getRow());
         dealDStream.map(s -> new Tuple2<String,String>(s._1,s._2.toString())).transform(new BulkPutMessage(getHBaseContext(jssc.sparkContext()) , "Deal")).print();
@@ -125,13 +125,13 @@ public class LinkResolution extends Custom{
         unResolvedWithHBase.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
         unResolvedWithHBase2.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
 
-        prevDStream.foreachRDD(new Function2<JavaPairRDD<String, WrapperMessage>, Time, Void>() {
+        /*prevDStream.foreachRDD(new Function2<JavaPairRDD<String, WrapperMessage>, Time, Void>() {
             @Override
             public Void call(JavaPairRDD<String, WrapperMessage> stringWrapperMessageJavaPairRDD, Time time) throws Exception {
                 System.out.println("End of Link Resolution = " + new Date());
                 return null;
             }
-        });
+        });*/
         return dealDStream.mapValues(s -> new WrapperMessage(s));
     }
 
