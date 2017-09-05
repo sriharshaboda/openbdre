@@ -137,7 +137,7 @@ public class LinkResolution extends Custom{
         inMemoryResolvedDstream.map(s -> new Tuple4(s._1, s._2._1().toString(), s._2._2().toString(),s._2._3().toString())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Resolved")).print();
         fullyResolvedWithHBase.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Resolved")).print();
         unResolvedWithHBase.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
-        unResolvedWithHBase2.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).foreachRDD(new LogPrinter());
+        unResolvedWithHBase2.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
 
 
 
@@ -153,13 +153,6 @@ public class LinkResolution extends Custom{
         return hbaseContext;
     }
 }
-
-class LogPrinter implements Serializable,Function<JavaRDD<Object>, Void> {
-@Override
-public Void call(JavaRDD<Object> objectJavaRDD) throws Exception {
-        return null;
-        }
-        }
 
 class HbaseUtils {
 
