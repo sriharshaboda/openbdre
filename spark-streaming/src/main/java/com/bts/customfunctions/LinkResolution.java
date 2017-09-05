@@ -67,6 +67,13 @@ public class LinkResolution extends Custom{
         });*/
         MapToPair mapToPair = new MapToPair();
         JavaPairDStream<String,Row> dealDStream = mapToPair.mapToPair(prevDStreamMap.get(prevPidList.get(0)).map(s -> s._2), "Deal.Header.BusinessKey:String").mapValues(s -> s.getRow());
+        dealDStream.foreachRDD(new Function2<JavaPairRDD<String, Row>, Time, Void>() {
+            @Override
+            public Void call(JavaPairRDD<String, Row> stringRowJavaPairRDD, Time time) throws Exception {
+                System.out.println("Beginning of Link Resolution = " + new Date().getTime());
+                return null;
+            }
+        });
         dealDStream.map(s -> new Tuple2<String,String>(s._1,s._2.toString())).transform(new BulkPutMessage(getHBaseContext(jssc.sparkContext()) , "Deal")).print();
 
         JavaPairDStream<String,Row> transactionDStream = mapToPair.mapToPair(prevDStreamMap.get(prevPidList.get(1)).map(s -> s._2), "Transaction.Header.BusinessKey:String").mapValues(s -> s.getRow());
@@ -123,15 +130,16 @@ public class LinkResolution extends Custom{
         inMemoryResolvedDstream.map(s -> new Tuple4(s._1, s._2._1().toString(), s._2._2().toString(),s._2._3().toString())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Resolved")).print();
         fullyResolvedWithHBase.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Resolved")).print();
         unResolvedWithHBase.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
-        unResolvedWithHBase2.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).print();
-
-        /*prevDStream.foreachRDD(new Function2<JavaPairRDD<String, WrapperMessage>, Time, Void>() {
+        unResolvedWithHBase2.map(s-> new Tuple4(s._1,s._2._1(),s._2._2(),s._2._3())).transform(new BulkPut(getHBaseContext(jssc.sparkContext()) , "Unresolved")).foreachRDD(new Function2<JavaRDD<Object>, Time, Void>() {
             @Override
-            public Void call(JavaPairRDD<String, WrapperMessage> stringWrapperMessageJavaPairRDD, Time time) throws Exception {
-                System.out.println("End of Link Resolution = " + new Date());
+            public Void call(JavaRDD<Object> objectJavaRDD, Time time) throws Exception {
+                System.out.println("End of Link Resolution = " + new Date().getTime());
                 return null;
             }
-        });*/
+        });
+
+
+
         return dealDStream.mapValues(s -> new WrapperMessage(s));
     }
 

@@ -37,7 +37,7 @@ public class Enricher implements Transformation {
         prevDStream.foreachRDD(new Function<JavaPairRDD<String, WrapperMessage>, Void>() {
             @Override
             public Void call(JavaPairRDD<String, WrapperMessage> stringWrapperMessageJavaPairRDD) throws Exception {
-                System.out.println("Beginning of Enricher = " + new Date() +"for pid = "+pid);
+                System.out.println("Beginning of Enricher = " + new Date().getTime() +"for pid = "+pid);
                 return null;
             }
         });
@@ -86,10 +86,10 @@ public class Enricher implements Transformation {
                 return finalRow;
             }
         });
-        prevDStream.foreachRDD(new Function<JavaPairRDD<String, WrapperMessage>, Void>() {
+        encrichedRowStream.mapValues(s -> new WrapperMessage(s)).foreachRDD(new Function<JavaPairRDD<String, WrapperMessage>, Void>() {
             @Override
             public Void call(JavaPairRDD<String, WrapperMessage> stringWrapperMessageJavaPairRDD) throws Exception {
-                System.out.println("End of Enricher = " + new Date() +"for pid = "+pid);
+                System.out.println("End of Enricher = " + new Date().getTime() +"for pid = "+pid);
                 return null;
             }
         });
