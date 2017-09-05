@@ -67,13 +67,20 @@ public class LinkResolution extends Custom{
         });*/
         MapToPair mapToPair = new MapToPair();
         JavaPairDStream<String,Row> dealDStream = mapToPair.mapToPair(prevDStreamMap.get(prevPidList.get(0)).map(s -> s._2), "Deal.Header.BusinessKey:String").mapValues(s -> s.getRow());
+        /*dealDStream.transform(new Function2<JavaPairRDD<String, Row>, Time, JavaRDD<Object>>() {
+            @Override
+            public JavaRDD<Object> call(JavaPairRDD<String, Row> stringRowJavaPairRDD, Time time) throws Exception {
+                System.out.println("Beginning of Link Resolution = " + new Date().getTime());
+                return null;
+            }
+        });
         dealDStream.foreachRDD(new Function2<JavaPairRDD<String, Row>, Time, Void>() {
             @Override
             public Void call(JavaPairRDD<String, Row> stringRowJavaPairRDD, Time time) throws Exception {
                 System.out.println("Beginning of Link Resolution = " + new Date().getTime());
                 return null;
             }
-        });
+        });*/
         dealDStream.map(s -> new Tuple2<String,String>(s._1,s._2.toString())).transform(new BulkPutMessage(getHBaseContext(jssc.sparkContext()) , "Deal")).print();
 
         JavaPairDStream<String,Row> transactionDStream = mapToPair.mapToPair(prevDStreamMap.get(prevPidList.get(1)).map(s -> s._2), "Transaction.Header.BusinessKey:String").mapValues(s -> s.getRow());
